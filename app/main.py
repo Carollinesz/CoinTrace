@@ -1,15 +1,19 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
 
 from app.api.v1.router import api_router
 from app.core.config import settings
 
+MUTATION_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    openapi_url=f"{settings.API_V1_PREFIX}/openapi.json",
-    docs_url=f"{settings.API_V1_PREFIX}/docs",
-    redoc_url=f"{settings.API_V1_PREFIX}/redoc",
+    openapi_url=f"{settings.API_V1_PREFIX}/openapi.json" if ((settings.DEMO == False) & (settings.PROD == False)) else "",
+    docs_url=f"{settings.API_V1_PREFIX}/docs" if ((settings.DEMO == False) & (settings.PROD == False)) else "",
+    redoc_url=f"{settings.API_V1_PREFIX}/redoc" if ((settings.DEMO == False) & (settings.PROD == False)) else "",
 )
 
 app.add_middleware(
@@ -19,6 +23,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def handle_block_mutations_in_demo(request: Request, call_next):
+    if settings.DEMO and request.method in MUTATION_METHODS:
+        return JSONResponse(status_code=403, content={"message": "Action disabled in demo version"})
+    return await call_next(request)
 
 app.include_router(api_router, prefix=settings.API_V1_PREFIX)
 

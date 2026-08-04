@@ -6,7 +6,6 @@ from sqlalchemy.orm import sessionmaker
 
 from app.core.config import settings
 
-
 def _build_safe_url(raw: str) -> str:
     url = make_url(raw)
     if url.password and not url.password.isascii():
@@ -53,11 +52,14 @@ def _ensure_database_exists(safe_url: str) -> None:
         system_engine.dispose()
 
 
-_ensure_user_exists( _build_safe_url(settings.MIGRATION_DATABASE_URL))
-_ensure_database_exists(_build_safe_url(settings.MIGRATION_DATABASE_URL))
+DB_Name = "/demo_db_v1" if settings.DEMO else "/financial_api_V1"
 
-engine = create_engine( _build_safe_url(settings.MIGRATION_DATABASE_URL), pool_pre_ping=True)
-engine_migrations = create_engine(_build_safe_url(settings.MIGRATION_DATABASE_URL), pool_pre_ping=True)
+
+_ensure_user_exists( _build_safe_url(settings.MIGRATION_DATABASE_URL + DB_Name))
+_ensure_database_exists(_build_safe_url(settings.MIGRATION_DATABASE_URL + DB_Name))
+
+engine = create_engine( _build_safe_url(settings.MIGRATION_DATABASE_URL + DB_Name), pool_pre_ping=True)
+engine_migrations = create_engine(_build_safe_url(settings.MIGRATION_DATABASE_URL + DB_Name), pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
