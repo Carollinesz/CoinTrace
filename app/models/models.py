@@ -1,5 +1,6 @@
 from decimal import Decimal
 from datetime import datetime, date
+from app.core.config import settings
 from app.core.database import engine_migrations
 
 from sqlalchemy import CheckConstraint, Date, ForeignKey, Numeric, String, TIMESTAMP, func, event, text
@@ -162,3 +163,8 @@ with engine_migrations.connect() as _conn:
     for _sql in _VIEWS:
         _conn.execute(text(_sql))
     _conn.commit()
+
+if settings.DEMO:
+    from app.core.demo_seed import handle_seed_demo_data
+
+    handle_seed_demo_data(engine_migrations)

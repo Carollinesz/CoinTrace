@@ -11,9 +11,9 @@ MUTATION_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    openapi_url=f"{settings.API_V1_PREFIX}/openapi.json" if ((settings.DEMO == False) & (settings.PROD == False)) else "",
-    docs_url=f"{settings.API_V1_PREFIX}/docs" if ((settings.DEMO == False) & (settings.PROD == False)) else "",
-    redoc_url=f"{settings.API_V1_PREFIX}/redoc" if ((settings.DEMO == False) & (settings.PROD == False)) else "",
+    openapi_url=f"{settings.API_V1_PREFIX}/openapi.json" if ((settings.PROD == False)) else "",
+    docs_url=f"{settings.API_V1_PREFIX}/docs" if ((settings.PROD == False)) else "",
+    redoc_url=f"{settings.API_V1_PREFIX}/redoc" if ((settings.PROD == False)) else "",
 )
 
 app.add_middleware(

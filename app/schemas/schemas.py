@@ -1,11 +1,18 @@
 from datetime import datetime, date
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Annotated, Optional
 
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
+
+
+def handle_quantize_money(value) -> Decimal:
+    """Columns and views keep 4 decimals; responses expose cents."""
+    return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
 
 Money = Annotated[Decimal, Field(max_digits=15, decimal_places=2)]
+MoneyOut = Annotated[Decimal, BeforeValidator(handle_quantize_money), Field(max_digits=15, decimal_places=2)]
 
 
 # ── Bank Account ──────────────────────────────────────────────────────────────
@@ -95,10 +102,10 @@ class BankAccountBalanceRead(BaseModel):
     account_id:      int
     account_name:    str
     account_type:    str
-    start_value:     Money
-    total_gains:     Money
-    total_expenses:  Money
-    current_balance: Money
+    start_value:     MoneyOut
+    total_gains:     MoneyOut
+    total_expenses:  MoneyOut
+    current_balance: MoneyOut
 
 
 # ── Credit Installments View ──────────────────────────────────────────────────
@@ -111,12 +118,12 @@ class CreditInstallmentRead(BaseModel):
     description:        str
     category:           str | None
     transaction_date:   date
-    total_value:        Money
+    total_value:        MoneyOut
     total_installments: int
     installment_number: int
     due_date:           date
     interest_rate:      Decimal
-    installment_value:  Money
+    installment_value:  MoneyOut
 
 
 # ── Upload ────────────────────────────────────────────────────────────────────

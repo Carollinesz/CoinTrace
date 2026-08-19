@@ -2,25 +2,18 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from app.models.models import banks
 
-
-def get_by_id(db: Session, bank_id: int) -> banks | None:
-    return db.get(banks, bank_id)
-
-
-def get_by_name(db: Session, bank_name: str) -> banks | None:
-    stmt = select(banks).where(banks.bank_name == bank_name)
-    return db.execute(stmt).scalar_one_or_none()
-
-
 def list_all(
     db: Session,
     skip: int = 0,
     limit: int = 100,
+    bank_id: int | None = None,
     bank_name: str | None = None,
 ) -> list[banks]:
     stmt = select(banks)
     if bank_name is not None:
         stmt = stmt.where(banks.bank_name.ilike(f"%{bank_name}%"))
+    if bank_id is not None:
+        stmt = stmt.where(banks.bank_id == bank_id)
     stmt = stmt.offset(skip).limit(limit)
     return list(db.execute(stmt).scalars().all())
 
