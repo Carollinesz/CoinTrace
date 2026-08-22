@@ -57,40 +57,11 @@ def test_list_installment_numbers_sequential(client):
     assert numbers == [1, 2, 3, 4]
 
 
-def test_get_installments_by_transaction(client):
-    acc = _make_account(client)
-    txn = _make_credit(client, acc, installments=6)
-    resp = client.get(f"{BASE}/{txn['transaction_id']}")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert len(data) == 6
-    for i, item in enumerate(data, start=1):
-        assert item["installment_number"] == i
-        assert item["transaction_id"] == txn["transaction_id"]
-
-
-def test_get_installments_transaction_not_found(client):
-    resp = client.get(f"{BASE}/999999")
-    assert resp.status_code == 404
-
-
-def test_get_installments_debit_transaction_returns_400(client):
-    acc = _make_account(client)
-    txn = client.post(TRANSACTIONS_BASE, json={
-        "account_id": acc,
-        "transaction_date": "2024-01-15",
-        "value": -50.0,
-        "description": "Mercado",
-        "type": "debit",
-    }).json()
-    resp = client.get(f"{BASE}/{txn['transaction_id']}")
-    assert resp.status_code == 400
-
-
 def test_installment_value_no_interest(client):
     acc = _make_account(client)
     txn = _make_credit(client, acc, installments=4)
-    data = client.get(f"{BASE}/{txn['transaction_id']}").json()
+    data = [item for item in client.get(BASE).json()
+            if item["transaction_id"] == txn["transaction_id"]]
     for item in data:
         assert float(item["installment_value"]) == pytest.approx(-225.0, rel=0.01)
 

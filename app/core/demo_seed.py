@@ -10,7 +10,6 @@ import pandas as pd
 from sqlalchemy import text
 from sqlalchemy.engine import Connection, Engine
 
-from app.constants.avaliable_banks import brazilian_banks
 
 DATASET_PATH = Path(__file__).resolve().parents[1] / "constants" / "dataset demo.xlsx"
 EXCEL_EPOCH = date(1899, 12, 30)
@@ -25,11 +24,8 @@ def handle_seed_demo_data(engine: Engine) -> None:
             return
 
         sheets = _read_dataset()
-        conn.execute(
-            bank_account.__table__.insert(),
-            _build_accounts(sheets["accounts"], _map_bank_ids(conn)),
-        )
         _sync_account_id_sequence(conn)
+        conn.execute(bank_account.__table__.insert(), _build_accounts(sheets["accounts"]))
         conn.execute(fixed_expense.__table__.insert(), _build_fixed_expenses(sheets["fixed"]))
         conn.execute(transaction.__table__.insert(), _build_transactions(sheets["transactions"]))
 
@@ -42,18 +38,11 @@ def _read_dataset() -> dict[str, pd.DataFrame]:
             for name in ("accounts", "fixed", "transactions")
         }
 
-
-def _map_bank_ids(conn: Connection) -> dict[int, int]:
-    """The dataset points to banks by their position in `brazilian_banks`, not by the generated id."""
-    bank_ids = dict(conn.execute(text("SELECT bank_name, bank_id FROM avaliable_banks")).all())
-    return {position: bank_ids[name] for position, name in enumerate(brazilian_banks) if name in bank_ids}
-
-
-def _build_accounts(df: pd.DataFrame, bank_ids_by_position: dict[int, int]) -> list[dict]:
+def _build_accounts(df: pd.DataFrame) -> list[dict]:
     return [
         {
             "account_id": int(row["account_id"]),
-            "bank_id": bank_ids_by_position.get(int(row["bank_id"]), int(row["bank_id"])),
+            "bank_id": int(row["bank_id"]),
             "account_name": row["account_name"],
             "account_type": row["account_type"],
             "start_value": Decimal(str(row["start_value"])),
@@ -99,7 +88,6 @@ def _build_transactions(df: pd.DataFrame) -> list[dict]:
         }
         for row in df.to_dict("records")
     ]
-
 
 def _build_details(raw: str | None) -> dict | None:
     if not isinstance(raw, str):

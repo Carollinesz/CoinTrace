@@ -40,15 +40,3 @@ def list_all(
         params,
     )
     return result.mappings().all()
-
-
-def get_by_transaction_id(db: Session, transaction_id: int) -> list:
-    result = db.execute(
-        text("""
-            SELECT * FROM credit_installments_view
-            WHERE transaction_id = :transaction_id
-            ORDER BY installment_number
-        """),
-        {"transaction_id": transaction_id},
-    )
-    return result.mappings().all()

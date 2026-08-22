@@ -20,11 +20,6 @@ def handle_list_fixed_expenses(
     return service.handle_list(db, skip=skip, limit=limit, account_id=account_id, category=category, is_active=is_active)
 
 
-@router.get("/{expense_id}", response_model=FixedExpenseRead)
-def handle_get_fixed_expense(expense_id: int, db: Session = Depends(get_db)):
-    return service.handle_get(db, expense_id)
-
-
 @router.post("", response_model=FixedExpenseRead, status_code=status.HTTP_201_CREATED)
 def handle_create_fixed_expense(payload: FixedExpenseCreate, db: Session = Depends(get_db)):
     return service.handle_create(db, payload)

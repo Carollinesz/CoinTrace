@@ -3,11 +3,6 @@ from sqlalchemy.orm import Session
 
 from app.models.models import fixed_expense
 
-
-def get_by_id(db: Session, expense_id: int) -> fixed_expense | None:
-    return db.get(fixed_expense, expense_id)
-
-
 def list_all(
     db: Session,
     skip: int = 0,

@@ -7,14 +7,6 @@ from sqlalchemy.orm import Session
 from app.models.models import transaction
 from app.schemas.schemas import TransactionCreate
 
-
-def get_by_id(db: Session, transaction_id: int) -> transaction | None:
-    obj = db.get(transaction, transaction_id)
-    if obj is None:
-        return None
-    return obj
-
-
 def list_all(
     db: Session,
     skip: int = 0,
@@ -49,8 +41,6 @@ def create(db: Session, data: dict) -> transaction:
     db.commit()
     db.refresh(obj)
     return obj
-
-
 
 
 def update(db: Session, obj: transaction, data: dict) -> transaction:

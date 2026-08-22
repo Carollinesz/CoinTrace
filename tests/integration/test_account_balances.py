@@ -19,6 +19,11 @@ def _make_account(client, start_value=1000.0, name="Test Account"):
     return resp.json()["account_id"]
 
 
+def _get_balance(client, account_id):
+    balances = client.get(BASE).json()
+    return next(b for b in balances if b["account_id"] == account_id)
+
+
 def _add_transaction(client, account_id, value, description="Test"):
     return client.post(TRANSACTIONS_BASE, json={
         "account_id": account_id,
@@ -51,13 +56,11 @@ def test_list_multiple_accounts(client):
     assert len(client.get(BASE).json()) == 2
 
 
-# ── Get ───────────────────────────────────────────────────────────────────────
+# ── Balance ───────────────────────────────────────────────────────────────────────
 
 def test_get_balance_no_transactions(client):
     acc = _make_account(client, start_value=1000.0)
-    resp = client.get(f"{BASE}/{acc}")
-    assert resp.status_code == 200
-    data = resp.json()
+    data = _get_balance(client, acc)
     assert data["account_id"] == acc
     assert float(data["start_value"]) == 1000.0
     assert float(data["total_gains"]) == 0.0
@@ -68,7 +71,7 @@ def test_get_balance_no_transactions(client):
 def test_get_balance_with_income(client):
     acc = _make_account(client, start_value=0.0)
     _add_transaction(client, acc, 500.0, "Salário")
-    data = client.get(f"{BASE}/{acc}").json()
+    data = _get_balance(client, acc)
     assert float(data["total_gains"]) == 500.0
     assert float(data["total_expenses"]) == 0.0
     assert float(data["current_balance"]) == pytest.approx(500.0)
@@ -77,7 +80,7 @@ def test_get_balance_with_income(client):
 def test_get_balance_with_expense(client):
     acc = _make_account(client, start_value=1000.0)
     _add_transaction(client, acc, -200.0, "Aluguel")
-    data = client.get(f"{BASE}/{acc}").json()
+    data = _get_balance(client, acc)
     assert float(data["total_gains"]) == 0.0
     assert float(data["total_expenses"]) == 200.0
     assert float(data["current_balance"]) == pytest.approx(800.0)
@@ -88,7 +91,7 @@ def test_get_balance_mixed_transactions(client):
     _add_transaction(client, acc, 500.0, "Salário")
     _add_transaction(client, acc, -200.0, "Aluguel")
     _add_transaction(client, acc, -50.0, "Supermercado")
-    data = client.get(f"{BASE}/{acc}").json()
+    data = _get_balance(client, acc)
     assert float(data["total_gains"]) == 500.0
     assert float(data["total_expenses"]) == 250.0
     assert float(data["current_balance"]) == pytest.approx(1250.0)
@@ -104,10 +107,6 @@ def test_get_balance_untracked_transactions_excluded(client):
         "type": "debit",
         "tracking": False,
     })
-    data = client.get(f"{BASE}/{acc}").json()
+    data = _get_balance(client, acc)
     assert float(data["total_expenses"]) == 0.0
     assert float(data["current_balance"]) == pytest.approx(1000.0)
-
-
-def test_get_balance_not_found(client):
-    assert client.get(f"{BASE}/999999").status_code == 404

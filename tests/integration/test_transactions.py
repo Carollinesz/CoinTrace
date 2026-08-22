@@ -130,20 +130,6 @@ def test_create_credit_invalid_installments_returns_400(client):
     assert resp.status_code == 400
 
 
-# ── Get ───────────────────────────────────────────────────────────────────────
-
-def test_get_by_id(client):
-    acc = _make_account(client)
-    created = client.post(BASE, json=_debit(acc)).json()
-    resp = client.get(f"{BASE}/{created['transaction_id']}")
-    assert resp.status_code == 200
-    assert resp.json()["transaction_id"] == created["transaction_id"]
-
-
-def test_get_not_found(client):
-    assert client.get(f"{BASE}/999999").status_code == 404
-
-
 # ── Update ────────────────────────────────────────────────────────────────────
 
 def test_update_description(client):

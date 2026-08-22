@@ -58,19 +58,6 @@ def test_create_duplicate_name_returns_409(client):
     assert resp.status_code == 409
 
 
-# ── Get ───────────────────────────────────────────────────────────────────────
-
-def test_get_by_id(client):
-    created = _create(client).json()
-    resp = client.get(f"{BASE}/{created['account_id']}")
-    assert resp.status_code == 200
-    assert resp.json()["account_id"] == created["account_id"]
-
-
-def test_get_not_found(client):
-    assert client.get(f"{BASE}/999999").status_code == 404
-
-
 # ── Update ────────────────────────────────────────────────────────────────────
 
 def test_update_name(client):

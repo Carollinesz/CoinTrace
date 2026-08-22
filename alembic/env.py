@@ -5,18 +5,27 @@ from sqlalchemy import pool
 
 from app.models.models import Base
 
-from app.core.config import settings
+from app.core.database import engine
 
 from alembic import context
 
 config = context.config
 
-config.set_main_option('sqlalchemy.url', settings.MIGRATION_DATABASE_URL)
+# MIGRATION_DATABASE_URL carries no database name, so migrations must reuse the
+# URL the app itself connects with (demo_db_v1 under DEMO, financial_api_V1
+# otherwise). An explicit sqlalchemy.url still wins, which lets tests point the
+# migrations at a throwaway database.
+if not config.get_main_option('sqlalchemy.url', None):
+    config.set_main_option(
+        'sqlalchemy.url', engine.url.render_as_string(hide_password=False)
+    )
 
 target_metadata = Base.metadata
 
 
-if config.config_file_name is not None:
+# `configure_logger` is switched off when the app runs the migrations itself,
+# because fileConfig would disable the loggers uvicorn has already set up.
+if config.config_file_name is not None and config.attributes.get("configure_logger", True):
     fileConfig(config.config_file_name)
 
 # add your model's MetaData object here

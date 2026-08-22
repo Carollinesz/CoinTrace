@@ -7,7 +7,7 @@ from app.core.database import get_db
 from app.schemas.schemas import CreditInstallmentRead
 from app.services import credit_installments as service
 
-router = APIRouter(prefix="/credit-installments", tags=["credit-installments"])
+router = APIRouter(prefix="/credit-installments", tags=["views"])
 
 
 @router.get("", response_model=list[CreditInstallmentRead])
@@ -30,7 +30,3 @@ def handle_list_credit_installments(
         due_date_to=due_date_to,
     )
 
-
-@router.get("/{transaction_id}", response_model=list[CreditInstallmentRead])
-def handle_get_credit_installments(transaction_id: int, db: Session = Depends(get_db)):
-    return service.handle_get_by_transaction(db, transaction_id)

@@ -34,12 +34,6 @@ def handle_list_transactions(
         date_to=date_to,
     )
 
-
-@router.get("/{transaction_id}", response_model=TransactionRead)
-def handle_get_transaction(transaction_id: int, db: Session = Depends(get_db)):
-    return service.handle_get(db, transaction_id)
-
-
 @router.post("", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
 def handle_create_transaction(
     payload: TransactionCreate, db: Session = Depends(get_db)

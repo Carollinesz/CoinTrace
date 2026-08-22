@@ -1,9 +1,6 @@
 from decimal import Decimal
 from datetime import datetime, date
-from app.core.config import settings
-from app.core.database import engine_migrations
-
-from sqlalchemy import CheckConstraint, Date, ForeignKey, Numeric, String, TIMESTAMP, func, event, text
+from sqlalchemy import CheckConstraint, Date, ForeignKey, Numeric, String, TIMESTAMP, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, registry, MappedAsDataclass
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -90,81 +87,3 @@ class fixed_expense(Base):
     __table_args__ = (
         CheckConstraint("due_day >= 1 AND due_day <= 31", name="check_due_day_range"),
     )
-
-
-from app.constants.avaliable_banks import brazilian_banks
-
-@event.listens_for(banks.__table__, 'after_create')
-def insert_default_bank(target, connection, **kw):
-    for bank in brazilian_banks:
-        connection.execute(
-            target.insert().values(bank_name=bank)
-        )
-    connection.execute(
-        text("SELECT setval(pg_get_serial_sequence('avaliable_banks', 'bank_id'), (SELECT MAX(bank_id) FROM avaliable_banks))")
-    )
-
-Base.metadata.create_all(engine_migrations)
-
-_VIEWS = [
-    """
-    CREATE OR REPLACE VIEW credit_installments_view AS
-    SELECT
-        t.transaction_id,
-        t.account_id,
-        t.description,
-        t.category,
-        t.transaction_date,
-        t.value                                                      AS total_value,
-        (t.details->>'installments')::int                            AS total_installments,
-        gs.n                                                         AS installment_number,
-        (t.details->>'first_payment')::date
-            + make_interval(months => gs.n - 1)                      AS due_date,
-        COALESCE((t.details->>'interest')::numeric, 0)               AS interest_rate,
-        CASE
-            WHEN COALESCE((t.details->>'interest')::numeric, 0) = 0 THEN
-                ROUND(t.value / (t.details->>'installments')::int, 4)
-            ELSE
-                ROUND(
-                    t.value
-                    * ((t.details->>'interest')::numeric
-                       * POWER(1 + (t.details->>'interest')::numeric,
-                               (t.details->>'installments')::int))
-                    / (POWER(1 + (t.details->>'interest')::numeric,
-                             (t.details->>'installments')::int) - 1),
-                    4)
-        END                                                          AS installment_value
-    FROM transactions t
-    CROSS JOIN LATERAL generate_series(1, (t.details->>'installments')::int) AS gs(n)
-    WHERE t.type = 'credit'
-      AND t.details IS NOT NULL
-      AND (t.details->>'installments') IS NOT NULL
-      AND (t.details->>'first_payment') IS NOT NULL
-    """,
-    """
-    CREATE OR REPLACE VIEW bank_account_balance_view AS
-    SELECT
-        ba.account_id,
-        ba.account_name,
-        ba.account_type,
-        COALESCE(ba.start_value, 0)                                                              AS start_value,
-        COALESCE(SUM(t.value) FILTER (WHERE t.tracking = true AND t.value > 0), 0)              AS total_gains,
-        COALESCE(SUM(ABS(t.value)) FILTER (WHERE t.tracking = true AND t.value < 0), 0)         AS total_expenses,
-        COALESCE(ba.start_value, 0)
-            + COALESCE(SUM(t.value) FILTER (WHERE t.tracking = true AND t.value > 0), 0)
-            - COALESCE(SUM(ABS(t.value)) FILTER (WHERE t.tracking = true AND t.value < 0), 0)   AS current_balance
-    FROM bank_accounts ba
-    LEFT JOIN transactions t ON t.account_id = ba.account_id
-    GROUP BY ba.account_id, ba.account_name, ba.account_type, ba.start_value
-    """,
-]
-
-with engine_migrations.connect() as _conn:
-    for _sql in _VIEWS:
-        _conn.execute(text(_sql))
-    _conn.commit()
-
-if settings.DEMO:
-    from app.core.demo_seed import handle_seed_demo_data
-
-    handle_seed_demo_data(engine_migrations)

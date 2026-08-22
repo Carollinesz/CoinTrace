@@ -20,10 +20,6 @@ def handle_list_bank_accounts(
     return service.handle_list(db, skip=skip, limit=limit, bank_id=bank_id, account_name=account_name, account_type=account_type)
 
 
-@router.get("/{account_id}", response_model=BankAccountRead)
-def handle_get_bank_account(account_id: int, db: Session = Depends(get_db)):
-    return service.handle_get(db, account_id)
-
 
 @router.post("", response_model=BankAccountRead, status_code=status.HTTP_201_CREATED)
 def handle_create_bank_account(

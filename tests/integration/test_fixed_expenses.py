@@ -68,19 +68,6 @@ def test_create_due_day_zero_returns_422(client):
     assert client.post(BASE, json=_expense(due_day=0)).status_code == 422
 
 
-# ── Get ───────────────────────────────────────────────────────────────────────
-
-def test_get_by_id(client):
-    created = client.post(BASE, json=_expense()).json()
-    resp = client.get(f"{BASE}/{created['expense_id']}")
-    assert resp.status_code == 200
-    assert resp.json()["expense_id"] == created["expense_id"]
-
-
-def test_get_not_found(client):
-    assert client.get(f"{BASE}/999999").status_code == 404
-
-
 # ── Update ────────────────────────────────────────────────────────────────────
 
 def test_update_value_and_active(client):

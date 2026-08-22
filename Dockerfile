@@ -9,4 +9,5 @@ COPY . .
 
 EXPOSE 8000
 
+# The app runs `alembic upgrade head` itself on startup (app/core/migrations.py).
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
