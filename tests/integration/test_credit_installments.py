@@ -72,3 +72,16 @@ def test_multiple_credit_transactions_listed(client):
     _make_credit(client, acc, installments=3)
     data = client.get(BASE).json()
     assert len(data) == 5
+
+
+def test_list_filter_by_transaction_id(client):
+    acc = _make_account(client)
+    txn = _make_credit(client, acc, installments=2)
+    _make_credit(client, acc, installments=3)
+    data = client.get(f"{BASE}?transaction_id={txn['transaction_id']}").json()
+    assert len(data) == 2
+    assert {item["transaction_id"] for item in data} == {txn["transaction_id"]}
+
+
+def test_list_filter_by_unknown_transaction_id_returns_empty(client):
+    assert client.get(f"{BASE}?transaction_id=999999").json() == []

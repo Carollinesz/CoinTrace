@@ -10,8 +10,9 @@ router = APIRouter(prefix="/account-balances", tags=["views"])
 
 @router.get("", response_model=list[BankAccountBalanceRead])
 def handle_list_account_balances(
+    account_id: int | None = Query(None),
     account_type: str | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    return service.handle_list(db, account_type=account_type)
+    return service.handle_list(db, account_id=account_id, account_type=account_type)
 

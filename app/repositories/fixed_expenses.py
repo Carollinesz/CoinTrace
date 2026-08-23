@@ -7,11 +7,14 @@ def list_all(
     db: Session,
     skip: int = 0,
     limit: int = 100,
+    expense_id: int | None = None,
     account_id: int | None = None,
     category: str | None = None,
     is_active: bool | None = None,
 ) -> list[fixed_expense]:
     stmt = select(fixed_expense)
+    if expense_id is not None:
+        stmt = stmt.where(fixed_expense.expense_id == expense_id)
     if account_id is not None:
         stmt = stmt.where(fixed_expense.account_id == account_id)
     if category is not None:

@@ -40,6 +40,17 @@ def test_list_pagination(client):
     assert len(resp.json()) == 3
 
 
+def test_list_filter_by_account_id(client):
+    created = _create(client, name="Filtrada").json()
+    _create(client, name="Outra")
+    data = client.get(f"{BASE}?account_id={created['account_id']}").json()
+    assert [a["account_id"] for a in data] == [created["account_id"]]
+
+
+def test_list_filter_by_unknown_account_id_returns_empty(client):
+    assert client.get(f"{BASE}?account_id=999999").json() == []
+
+
 # ── Create ────────────────────────────────────────────────────────────────────
 
 def test_create_success(client):
@@ -90,7 +101,7 @@ def test_update_not_found(client):
 def test_delete_success(client):
     created = _create(client).json()
     assert client.delete(f"{BASE}/{created['account_id']}").status_code == 204
-    assert client.get(f"{BASE}/{created['account_id']}").status_code == 404
+    assert client.get(f"{BASE}?account_id={created['account_id']}").json() == []
 
 
 def test_delete_not_found(client):

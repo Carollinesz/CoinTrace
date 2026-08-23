@@ -14,28 +14,28 @@ from app.schemas.schemas import TransactionCreate, TransactionUpdate, Transactio
 
 
 def _ensure_account_exists(db: Session, account_id: int) -> None:
-    if bank_accounts_repo.get_by_id(db, account_id) is None:
+    if not bank_accounts_repo.list_all(db, skip=0, limit=1, account_id=account_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Bank account {account_id} not found",
         )
 
 
-
 def handle_get(db: Session, transaction_id: int) -> transaction:
-    obj = repo.get_by_id(db, transaction_id)
-    if obj is None:
+    matches = repo.list_all(db, skip=0, limit=1, transaction_id=transaction_id)
+    if not matches:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Transaction {transaction_id} not found",
         )
-    return obj
+    return matches[0]
 
 
 def handle_list(
     db: Session,
     skip: int,
     limit: int,
+    transaction_id: int | None = None,
     account_id: int | None = None,
     type: str | None = None,
     category: str | None = None,
@@ -47,6 +47,7 @@ def handle_list(
         db,
         skip=skip,
         limit=limit,
+        transaction_id=transaction_id,
         account_id=account_id,
         type=type,
         category=category,
@@ -172,9 +173,8 @@ def handle_upload_rows(db: Session, df: pd.DataFrame) -> TransactionUploadResult
 
         try:
             if raw_account_id: 
-                if bank_accounts_repo.get_by_id(db, int(raw_account_id)) is None:
-                    print(int(raw_account_id))
-                    raise ValueError("Bank account {raw_account_id} not found")
+                if not bank_accounts_repo.list_all(db, skip=0, limit=1, account_id=int(raw_account_id)):
+                    raise ValueError(f"Bank account {raw_account_id} not found")
             parsed_account_id = int(raw_account_id) if raw_account_id else raw_account_id
         except (ValueError, InvalidOperation):
             _error_row_(f"Bank account {raw_account_id} not found")

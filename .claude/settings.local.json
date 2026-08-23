@@ -1,25 +1,26 @@
 {
   "permissions": {
     "allow": [
-      "Bash(conda run *)",
-      "PowerShell(Get-Command conda -ErrorAction SilentlyContinue; \\(Get-Command python -ErrorAction SilentlyContinue\\).Source)",
-      "Bash(cat .env.example)",
-      "Bash(cat requirements*.txt)",
-      "Bash(cat pyproject.toml)",
-      "Bash(python -c \"from app.main import app; [print\\(r.path, sorted\\(r.methods or []\\)\\) for r in app.routes]\")",
-      "Bash(pip show *)",
-      "Bash(Select-String \"Name|Version|not found\")",
-      "Bash(pip install *)",
-      "Bash(python -m pytest tests/ -x --tb=short -q)",
-      "Bash(where python *)",
-      "Bash(C:/Users/Zerbinatti/miniconda3/envs/financial-control/python.exe -m pytest tests/ -x --tb=short -q)",
-      "PowerShell(Get-ChildItem \"$env:USERPROFILE\\\\miniconda3\\\\envs\\\\\" -ErrorAction SilentlyContinue; Get-ChildItem \"$env:USERPROFILE\\\\anaconda3\\\\envs\\\\\" -ErrorAction SilentlyContinue; Get-ChildItem \"C:\\\\ProgramData\\\\miniconda3\\\\envs\\\\\" -ErrorAction SilentlyContinue; \\(Get-Command conda -ErrorAction SilentlyContinue\\).Source)",
-      "PowerShell(Get-ChildItem \"$env:USERPROFILE\\\\.conda\\\\envs\\\\\" -ErrorAction SilentlyContinue | Select-Object Name,FullName)",
-      "PowerShell(& \"C:\\\\Users\\\\Zerbinatti\\\\.conda\\\\envs\\\\financial-control\\\\python.exe\" -c \"import fastapi, sqlalchemy, psycopg2; print\\('OK'\\)\" 2>&1)",
-      "PowerShell(& \"C:\\\\Users\\\\Zerbinatti\\\\.conda\\\\envs\\\\financial-control\\\\python.exe\" -m pip install pytest pytest-httpx httpx 2>&1)",
-      "PowerShell(Get-Service \"postgresql-x64-18\" | Select-Object Name, Status; $pgPath = \"C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\bin\"; if \\(Test-Path $pgPath\\) { & \"$pgPath\\\\psql.exe\" -U postgres -c \"SELECT 1\" 2>&1 } else { \"Path not found: $pgPath\" })",
-      "PowerShell($pgPath = \"C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\bin\"; & \"$pgPath\\\\psql.exe\" -U postgres -h 127.0.0.1 -p 5433 -c \"SELECT version\\(\\)\" 2>&1 | Select-Object -First 5)",
-      "PowerShell($pgPath = \"C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\bin\"; & \"$pgPath\\\\psql.exe\" -U postgres -h 127.0.0.1 -p 3308 -c \"SELECT version\\(\\)\" 2>&1 | Select-Object -First 5)"
+      "Bash(npm install *)",
+      "Bash(del \"C:\\\\Users\\\\Zerbinatti\\\\Desktop\\\\Projetos\\\\personal-wallet\\\\src\\\\index.tsx\")",
+      "Bash(npx vite *)",
+      "Bash(npm start *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\" http://localhost:5173/)",
+      "Bash(where chromium-cli *)",
+      "Bash(where chromium *)",
+      "Bash(where \"chromium.exe\")",
+      "Bash(npx chromium-cli *)",
+      "Bash(where npx *)",
+      "Bash(npx playwright *)",
+      "Bash(npx puppeteer *)",
+      "Bash(cp smoke.mjs .claude/skills/run-personal-wallet/driver.mjs && ls .claude/skills/run-personal-wallet/)",
+      "Bash(node .claude/skills/run-personal-wallet/driver.mjs)",
+      "Bash(node .claude/skills/run-personal-wallet/driver.mjs transactions)",
+      "Bash(node -e ' *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\Zerbinatti\\Desktop\\Projetos\\personal-wallet\\.claude\\skills\\run-personal-wallet"
     ]
   }
 }

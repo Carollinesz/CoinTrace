@@ -67,6 +67,18 @@ def test_list_returns_created(client):
     assert "Farmácia" in descs
 
 
+def test_list_filter_by_transaction_id(client):
+    acc = _make_account(client)
+    created = client.post(BASE, json=_debit(acc, "Padaria")).json()
+    client.post(BASE, json=_debit(acc, "Farmácia"))
+    data = client.get(f"{BASE}?transaction_id={created['transaction_id']}").json()
+    assert [t["description"] for t in data] == ["Padaria"]
+
+
+def test_list_filter_by_unknown_transaction_id_returns_empty(client):
+    assert client.get(f"{BASE}?transaction_id=999999").json() == []
+
+
 # ── Create ────────────────────────────────────────────────────────────────────
 
 def test_create_debit(client):
@@ -165,7 +177,7 @@ def test_delete_success(client):
     acc = _make_account(client)
     created = client.post(BASE, json=_debit(acc)).json()
     assert client.delete(f"{BASE}/{created['transaction_id']}").status_code == 204
-    assert client.get(f"{BASE}/{created['transaction_id']}").status_code == 404
+    assert client.get(f"{BASE}?transaction_id={created['transaction_id']}").json() == []
 
 
 def test_delete_not_found(client):

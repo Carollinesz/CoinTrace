@@ -12,12 +12,13 @@ router = APIRouter(prefix="/bank-accounts", tags=["bank-accounts"])
 def handle_list_bank_accounts(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
+    account_id: int | None = Query(None),
     bank_id: int | None = Query(None),
     account_name: str | None = Query(None),
     account_type: str | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    return service.handle_list(db, skip=skip, limit=limit, bank_id=bank_id, account_name=account_name, account_type=account_type)
+    return service.handle_list(db, skip=skip, limit=limit, account_id=account_id, bank_id=bank_id, account_name=account_name, account_type=account_type)
 
 
 

@@ -24,7 +24,6 @@ def handle_seed_demo_data(engine: Engine) -> None:
             return
 
         sheets = _read_dataset()
-        _sync_account_id_sequence(conn)
         conn.execute(bank_account.__table__.insert(), _build_accounts(sheets["accounts"]))
         conn.execute(fixed_expense.__table__.insert(), _build_fixed_expenses(sheets["fixed"]))
         conn.execute(transaction.__table__.insert(), _build_transactions(sheets["transactions"]))
@@ -41,7 +40,6 @@ def _read_dataset() -> dict[str, pd.DataFrame]:
 def _build_accounts(df: pd.DataFrame) -> list[dict]:
     return [
         {
-            "account_id": int(row["account_id"]),
             "bank_id": int(row["bank_id"]),
             "account_name": row["account_name"],
             "account_type": row["account_type"],
@@ -49,15 +47,6 @@ def _build_accounts(df: pd.DataFrame) -> list[dict]:
         }
         for row in df.to_dict("records")
     ]
-
-
-def _sync_account_id_sequence(conn: Connection) -> None:
-    conn.execute(
-        text(
-            "SELECT setval(pg_get_serial_sequence('bank_accounts', 'account_id'), "
-            "GREATEST((SELECT MAX(account_id) FROM bank_accounts), 1))"
-        )
-    )
 
 
 def _build_fixed_expenses(df: pd.DataFrame) -> list[dict]:

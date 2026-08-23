@@ -11,6 +11,7 @@ def list_all(
     db: Session,
     skip: int = 0,
     limit: int = 100,
+    transaction_id: int | None = None,
     account_id: int | None = None,
     type: str | None = None,
     category: str | None = None,
@@ -19,6 +20,8 @@ def list_all(
     date_to: date | None = None,
 ) -> list[transaction]:
     stmt = select(transaction)
+    if transaction_id is not None:
+        stmt = stmt.where(transaction.transaction_id == transaction_id)
     if account_id is not None:
         stmt = stmt.where(transaction.account_id == account_id)
     if type is not None:

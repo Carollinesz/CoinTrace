@@ -34,22 +34,10 @@ This is a microservice to control personal finances, it won't have a frontend, j
 
 ## project structure
 
-│   ├── .env
-│   ├── .env.example
-│   ├── .gitignore
-│   ├── alembic.ini **ignore**
-│   ├── Claude.md
-│   ├── Extrato Conta Corrente-2026.ofx **ignore**
-│   ├── listar.py **ignore**
-│   ├── README.md **ignore**
-│   └── teste.py **ignore**
+
 │   ├── .claude/
 │   │   └── settings.local.json
-│   ├── alembic/ **ignore**
-│   │   ├── env.py**ignore** 
-│   │   └── script.py.mako **ignore**
-│   │   ├── versions/ **ignore**
-│   │   │   └── .gitkeep
+│   ├── alembic/ **Database Migrations**
 │   ├── app/ **Main application**
 │   │   └── main.py **Fast API init**
 │   │   ├── api/ **API Routes**
@@ -62,13 +50,14 @@ This is a microservice to control personal finances, it won't have a frontend, j
 │   │   │   │   │   ├── account_balances.py **view account balance**
 │   │   │   │   │   ├── credit_installments.py **view credit installments from transactions**
 │   │   │   │   │   └── fixed_expenses.py **table users' fixed expenses**
-│   │   ├── constants/ **empty**
+│   │   ├── constants/ **Demo dataset**
 │   │   ├── core/ **Core config and database**
 │   │   │   ├── config.py **ignore**
-│   │   │   └── database.py **database connection**
+│   │   │   ├── database.py **database connection**
+│   │   │   └── demo_seed.py **insert demo dataset in database**
 │   │   ├── models/ **Postgreesql Models**
 │   │   │   └── models.py **banks, transactions and bank_accounts models**
-│   │   ├── repositories/
+│   │   ├── repositories/ **Endpoints logic**
 │   │   │   ├── account_balances.py
 │   │   │   ├── banks.py
 │   │   │   ├── bank_accounts.py
@@ -117,7 +106,7 @@ Create a new migration:
 alembic revision --autogenerate -m "message"
 ```
 
-Apply migrations:
+Apply migrations:   
 
 ```bash
 alembic upgrade head

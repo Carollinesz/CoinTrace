@@ -16,7 +16,7 @@ def handle_list_banks(
     bank_id: int | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    return service.handle_list(db, skip=skip, limit=limit, bank_name=bank_name)
+    return service.handle_list(db, skip=skip, limit=limit, bank_id=bank_id, bank_name=bank_name)
 
 @router.post("", response_model=BanksRead, status_code=status.HTTP_201_CREATED)
 def handle_create_bank(payload: BanksCreate, db: Session = Depends(get_db)):

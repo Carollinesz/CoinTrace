@@ -28,7 +28,7 @@ def _make_txn(transaction_id=1, description="Test", type="debit", account_id=1):
 # ── handle_get ────────────────────────────────────────────────────────────────
 
 def test_get_not_found_raises_404():
-    with patch("app.repositories.transactions.get_by_id", return_value=None):
+    with patch("app.repositories.transactions.list_all", return_value=[]):
         with pytest.raises(HTTPException) as exc:
             service.handle_get(_mock_db(), 99)
     assert exc.value.status_code == 404
@@ -36,7 +36,7 @@ def test_get_not_found_raises_404():
 
 def test_get_returns_transaction():
     txn = _make_txn()
-    with patch("app.repositories.transactions.get_by_id", return_value=txn):
+    with patch("app.repositories.transactions.list_all", return_value=[txn]):
         assert service.handle_get(_mock_db(), 1) is txn
 
 
@@ -49,7 +49,7 @@ def test_create_account_not_found_raises_404():
         value=Decimal("-50.00"),
         description="Test",
     )
-    with patch("app.repositories.bank_accounts.get_by_id", return_value=None):
+    with patch("app.repositories.bank_accounts.list_all", return_value=[]):
         with pytest.raises(HTTPException) as exc:
             service.handle_create(_mock_db(), payload)
     assert exc.value.status_code == 404
@@ -63,7 +63,7 @@ def test_create_success():
         value=Decimal("-50.00"),
         description="Test",
     )
-    with patch("app.repositories.bank_accounts.get_by_id", return_value=MagicMock()), \
+    with patch("app.repositories.bank_accounts.list_all", return_value=[MagicMock()]), \
          patch("app.repositories.transactions.create", return_value=txn):
         assert service.handle_create(_mock_db(), payload) is txn
 
@@ -83,7 +83,7 @@ def test_update_account_change_to_nonexistent_raises_404():
     txn = _make_txn(account_id=1)
     payload = TransactionUpdate(account_id=999)
     with patch("app.services.transactions.handle_get", return_value=txn), \
-         patch("app.repositories.bank_accounts.get_by_id", return_value=None):
+         patch("app.repositories.bank_accounts.list_all", return_value=[]):
         with pytest.raises(HTTPException) as exc:
             service.handle_update(_mock_db(), 1, payload)
     assert exc.value.status_code == 404

@@ -22,7 +22,7 @@ def _make_account(account_id=1, account_name="Conta", account_type="checking", b
 # ── handle_get ────────────────────────────────────────────────────────────────
 
 def test_get_not_found_raises_404():
-    with patch("app.repositories.bank_accounts.get_by_id", return_value=None):
+    with patch("app.repositories.bank_accounts.list_all", return_value=[]):
         with pytest.raises(HTTPException) as exc:
             service.handle_get(_mock_db(), 99)
     assert exc.value.status_code == 404
@@ -30,17 +30,25 @@ def test_get_not_found_raises_404():
 
 def test_get_returns_account():
     acc = _make_account()
-    with patch("app.repositories.bank_accounts.get_by_id", return_value=acc):
+    with patch("app.repositories.bank_accounts.list_all", return_value=[acc]):
         result = service.handle_get(_mock_db(), 1)
     assert result is acc
+
+
+def test_get_filters_by_account_id():
+    db = _mock_db()
+    acc = _make_account(account_id=7)
+    with patch("app.repositories.bank_accounts.list_all", return_value=[acc]) as mock_list:
+        service.handle_get(db, 7)
+    assert mock_list.call_args.kwargs["account_id"] == 7
 
 
 # ── handle_create ─────────────────────────────────────────────────────────────
 
 def test_create_duplicate_name_raises_409():
-    existing = _make_account()
+    existing = _make_account(account_name="Duplicada")
     payload = BankAccountCreate(bank_id=1, account_name="Duplicada", account_type="checking")
-    with patch("app.repositories.bank_accounts.get_by_name", return_value=existing):
+    with patch("app.repositories.bank_accounts.list_all", return_value=[existing]):
         with pytest.raises(HTTPException) as exc:
             service.handle_create(_mock_db(), payload)
     assert exc.value.status_code == 409
@@ -49,8 +57,18 @@ def test_create_duplicate_name_raises_409():
 def test_create_success():
     new = _make_account(account_name="Nova")
     payload = BankAccountCreate(bank_id=1, account_name="Nova", account_type="checking")
-    with patch("app.repositories.bank_accounts.get_by_name", return_value=None), \
+    with patch("app.repositories.bank_accounts.list_all", return_value=[]), \
          patch("app.repositories.bank_accounts.create", return_value=new):
+        result = service.handle_create(_mock_db(), payload)
+    assert result is new
+
+
+def test_create_partial_name_match_is_not_a_conflict():
+    # the name filter matches partially (ILIKE), so only an exact hit is a conflict
+    other = _make_account(account_name="Nova Poupanca")
+    new = _make_account(account_name="Nova")
+    payload = BankAccountCreate(bank_id=1, account_name="Nova", account_type="checking")
+    with patch("app.repositories.bank_accounts.list_all", return_value=[other]),          patch("app.repositories.bank_accounts.create", return_value=new):
         result = service.handle_create(_mock_db(), payload)
     assert result is new
 
@@ -62,7 +80,7 @@ def test_update_name_conflict_raises_409():
     other = _make_account(account_id=2, account_name="Ocupada")
     payload = BankAccountUpdate(account_name="Ocupada")
     with patch("app.services.bank_accounts.handle_get", return_value=existing), \
-         patch("app.repositories.bank_accounts.get_by_name", return_value=other):
+         patch("app.repositories.bank_accounts.list_all", return_value=[other]):
         with pytest.raises(HTTPException) as exc:
             service.handle_update(_mock_db(), 1, payload)
     assert exc.value.status_code == 409

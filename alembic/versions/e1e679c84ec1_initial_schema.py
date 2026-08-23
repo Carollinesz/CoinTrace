@@ -25,14 +25,12 @@ def upgrade() -> None:
     sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('bank_id')
     )
-    # Seed the bank list with fixed ids so bank_id means the same thing in every
-    # environment, then move the sequence past them.
     op.bulk_insert(
         sa.table(
             'avaliable_banks',
             sa.column('bank_id', sa.Integer),
             sa.column('bank_name', sa.String),
-        ),
+        ), 
         [
         {'bank_id': 1, 'bank_name': 'Nubank'},
         {'bank_id': 2, 'bank_name': 'Inter'},
@@ -47,10 +45,6 @@ def upgrade() -> None:
         {'bank_id': 11, 'bank_name': 'Ágora'},
         ],
     )
-    op.execute(
-        "SELECT setval(pg_get_serial_sequence('avaliable_banks', 'bank_id'), "
-        "(SELECT MAX(bank_id) FROM avaliable_banks))"
-    )
 
     op.create_table('bank_accounts',
     sa.Column('account_id', sa.Integer(), autoincrement=True, nullable=False),
@@ -62,7 +56,8 @@ def upgrade() -> None:
     sa.CheckConstraint('-999000000000 < start_value AND start_value < 999000000000', name='check_start_value_limit'),
     sa.PrimaryKeyConstraint('account_id'),
     sa.UniqueConstraint('account_name')
-    )
+    ) 
+    
     op.create_table('fixed_expenses',
     sa.Column('expense_id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
@@ -140,7 +135,9 @@ def upgrade() -> None:
         LEFT JOIN transactions t ON t.account_id = ba.account_id
         GROUP BY ba.account_id, ba.account_name, ba.account_type, ba.start_value
     """)
+
     # ### end Alembic commands ###
+
 
 
 def downgrade() -> None:

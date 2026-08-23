@@ -8,16 +8,12 @@ from fastapi.responses import JSONResponse
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import engine
-from app.core.migrations import handle_run_migrations
 
 MUTATION_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 
 
 @asynccontextmanager
 async def handle_lifespan(app: FastAPI):
-    handle_run_migrations()
-    # The schema itself comes from the migrations above; this only fills an
-    # already-migrated demo database with its sample data.
     if settings.DEMO:
         from app.core.demo_seed import handle_seed_demo_data
 

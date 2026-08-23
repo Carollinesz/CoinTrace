@@ -12,12 +12,13 @@ router = APIRouter(prefix="/fixed-expenses", tags=["fixed-expenses"])
 def handle_list_fixed_expenses(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
+    expense_id: int | None = Query(None),
     account_id: int | None = Query(None),
     category: str | None = Query(None),
     is_active: bool | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    return service.handle_list(db, skip=skip, limit=limit, account_id=account_id, category=category, is_active=is_active)
+    return service.handle_list(db, skip=skip, limit=limit, expense_id=expense_id, account_id=account_id, category=category, is_active=is_active)
 
 
 @router.post("", response_model=FixedExpenseRead, status_code=status.HTTP_201_CREATED)

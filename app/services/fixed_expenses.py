@@ -8,7 +8,7 @@ from app.schemas.schemas import FixedExpenseCreate, FixedExpenseUpdate
 
 
 def _ensure_account_exists(db: Session, account_id: int) -> None:
-    if bank_accounts_repo.get_by_id(db, account_id) is None:
+    if not bank_accounts_repo.list_all(db, skip=0, limit=1, account_id=account_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Bank account {account_id} not found",
@@ -16,24 +16,25 @@ def _ensure_account_exists(db: Session, account_id: int) -> None:
 
 
 def handle_get(db: Session, expense_id: int) -> fixed_expense:
-    obj = repo.get_by_id(db, expense_id)
-    if obj is None:
+    matches = repo.list_all(db, skip=0, limit=1, expense_id=expense_id)
+    if not matches:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Fixed expense {expense_id} not found",
         )
-    return obj
+    return matches[0]
 
 
 def handle_list(
     db: Session,
     skip: int,
     limit: int,
+    expense_id: int | None = None,
     account_id: int | None = None,
     category: str | None = None,
     is_active: bool | None = None,
 ) -> list[fixed_expense]:
-    return repo.list_all(db, skip=skip, limit=limit, account_id=account_id, category=category, is_active=is_active)
+    return repo.list_all(db, skip=skip, limit=limit, expense_id=expense_id, account_id=account_id, category=category, is_active=is_active)
 
 
 def handle_create(db: Session, payload: FixedExpenseCreate) -> fixed_expense:

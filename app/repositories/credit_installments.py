@@ -8,6 +8,7 @@ def list_all(
     db: Session,
     skip: int = 0,
     limit: int = 100,
+    transaction_id: int | None = None,
     account_id: int | None = None,
     category: str | None = None,
     due_date_from: date | None = None,
@@ -16,6 +17,9 @@ def list_all(
     conditions = []
     params: dict = {"skip": skip, "limit": limit}
 
+    if transaction_id is not None:
+        conditions.append("transaction_id = :transaction_id")
+        params["transaction_id"] = transaction_id
     if account_id is not None:
         conditions.append("account_id = :account_id")
         params["account_id"] = account_id

@@ -7,11 +7,14 @@ def list_all(
     db: Session,
     skip: int = 0,
     limit: int = 100,
+    account_id: int | None = None,
     bank_id: int | None = None,
     account_name: str | None = None,
     account_type: str | None = None,
 ) -> list[bank_account]:
     stmt = select(bank_account)
+    if account_id is not None:
+        stmt = stmt.where(bank_account.account_id == account_id)
     if bank_id is not None:
         stmt = stmt.where(bank_account.bank_id == bank_id)
     if account_name is not None:

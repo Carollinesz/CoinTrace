@@ -14,6 +14,7 @@ router = APIRouter(prefix="/credit-installments", tags=["views"])
 def handle_list_credit_installments(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
+    transaction_id: int | None = Query(None),
     account_id: int | None = Query(None),
     category: str | None = Query(None),
     due_date_from: date | None = Query(None),
@@ -24,6 +25,7 @@ def handle_list_credit_installments(
         db,
         skip=skip,
         limit=limit,
+        transaction_id=transaction_id,
         account_id=account_id,
         category=category,
         due_date_from=due_date_from,

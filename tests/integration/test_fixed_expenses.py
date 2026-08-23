@@ -38,6 +38,17 @@ def test_list_returns_created(client):
     assert "Spotify" in names
 
 
+def test_list_filter_by_expense_id(client):
+    created = client.post(BASE, json=_expense("Netflix")).json()
+    client.post(BASE, json=_expense("Spotify"))
+    data = client.get(f"{BASE}?expense_id={created['expense_id']}").json()
+    assert [e["name"] for e in data] == ["Netflix"]
+
+
+def test_list_filter_by_unknown_expense_id_returns_empty(client):
+    assert client.get(f"{BASE}?expense_id=999999").json() == []
+
+
 # ── Create ────────────────────────────────────────────────────────────────────
 
 def test_create_success(client):
@@ -101,7 +112,7 @@ def test_update_not_found(client):
 def test_delete_success(client):
     created = client.post(BASE, json=_expense()).json()
     assert client.delete(f"{BASE}/{created['expense_id']}").status_code == 204
-    assert client.get(f"{BASE}/{created['expense_id']}").status_code == 404
+    assert client.get(f"{BASE}?expense_id={created['expense_id']}").json() == []
 
 
 def test_delete_not_found(client):

@@ -26,7 +26,7 @@ def _make_expense(expense_id=1, name="Netflix", due_day=5, account_id=None, is_a
 # ── handle_get ────────────────────────────────────────────────────────────────
 
 def test_get_not_found_raises_404():
-    with patch("app.repositories.fixed_expenses.get_by_id", return_value=None):
+    with patch("app.repositories.fixed_expenses.list_all", return_value=[]):
         with pytest.raises(HTTPException) as exc:
             service.handle_get(_mock_db(), 99)
     assert exc.value.status_code == 404
@@ -34,7 +34,7 @@ def test_get_not_found_raises_404():
 
 def test_get_returns_expense():
     exp = _make_expense()
-    with patch("app.repositories.fixed_expenses.get_by_id", return_value=exp):
+    with patch("app.repositories.fixed_expenses.list_all", return_value=[exp]):
         assert service.handle_get(_mock_db(), 1) is exp
 
 
@@ -42,7 +42,7 @@ def test_get_returns_expense():
 
 def test_create_with_nonexistent_account_raises_404():
     payload = FixedExpenseCreate(name="Netflix", value=Decimal("55.90"), due_day=5, account_id=999)
-    with patch("app.repositories.bank_accounts.get_by_id", return_value=None):
+    with patch("app.repositories.bank_accounts.list_all", return_value=[]):
         with pytest.raises(HTTPException) as exc:
             service.handle_create(_mock_db(), payload)
     assert exc.value.status_code == 404
@@ -51,7 +51,7 @@ def test_create_with_nonexistent_account_raises_404():
 def test_create_without_account_skips_account_check():
     exp = _make_expense()
     payload = FixedExpenseCreate(name="Netflix", value=Decimal("55.90"), due_day=5)
-    with patch("app.repositories.bank_accounts.get_by_id") as mock_check, \
+    with patch("app.repositories.bank_accounts.list_all") as mock_check, \
          patch("app.repositories.fixed_expenses.create", return_value=exp):
         result = service.handle_create(_mock_db(), payload)
     mock_check.assert_not_called()
@@ -61,7 +61,7 @@ def test_create_without_account_skips_account_check():
 def test_create_success_with_valid_account():
     exp = _make_expense()
     payload = FixedExpenseCreate(name="Netflix", value=Decimal("55.90"), due_day=5, account_id=1)
-    with patch("app.repositories.bank_accounts.get_by_id", return_value=MagicMock()), \
+    with patch("app.repositories.bank_accounts.list_all", return_value=[MagicMock()]), \
          patch("app.repositories.fixed_expenses.create", return_value=exp):
         assert service.handle_create(_mock_db(), payload) is exp
 
@@ -72,7 +72,7 @@ def test_update_to_nonexistent_account_raises_404():
     exp = _make_expense()
     payload = FixedExpenseUpdate(account_id=999)
     with patch("app.services.fixed_expenses.handle_get", return_value=exp), \
-         patch("app.repositories.bank_accounts.get_by_id", return_value=None):
+         patch("app.repositories.bank_accounts.list_all", return_value=[]):
         with pytest.raises(HTTPException) as exc:
             service.handle_update(_mock_db(), 1, payload)
     assert exc.value.status_code == 404
@@ -82,7 +82,7 @@ def test_update_null_account_skips_account_check():
     exp = _make_expense(account_id=1)
     payload = FixedExpenseUpdate(account_id=None)
     with patch("app.services.fixed_expenses.handle_get", return_value=exp), \
-         patch("app.repositories.bank_accounts.get_by_id") as mock_check, \
+         patch("app.repositories.bank_accounts.list_all") as mock_check, \
          patch("app.repositories.fixed_expenses.update", return_value=exp):
         service.handle_update(_mock_db(), 1, payload)
     mock_check.assert_not_called()

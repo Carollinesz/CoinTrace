@@ -14,6 +14,7 @@ router = APIRouter(prefix="/transactions", tags=["transactions"])
 def handle_list_transactions(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=500),
+    transaction_id: int | None = Query(None),
     account_id: int | None = Query(None),
     type: str | None = Query(None),
     category: str | None = Query(None),
@@ -26,6 +27,7 @@ def handle_list_transactions(
         db,
         skip=skip,
         limit=limit,
+        transaction_id=transaction_id,
         account_id=account_id,
         type=type,
         category=category,

@@ -110,3 +110,14 @@ def test_get_balance_untracked_transactions_excluded(client):
     data = _get_balance(client, acc)
     assert float(data["total_expenses"]) == 0.0
     assert float(data["current_balance"]) == pytest.approx(1000.0)
+
+
+def test_list_filter_by_account_id(client):
+    acc = _make_account(client, name="Conta A")
+    _make_account(client, name="Conta B")
+    data = client.get(f"{BASE}?account_id={acc}").json()
+    assert [b["account_id"] for b in data] == [acc]
+
+
+def test_list_filter_by_unknown_account_id_returns_empty(client):
+    assert client.get(f"{BASE}?account_id=999999").json() == []
