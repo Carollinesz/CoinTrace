@@ -5,6 +5,8 @@ from typing import Annotated, Optional
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 
+from app.utils.text_functions import handle_normalize_text
+
 
 def handle_quantize_money(value) -> Decimal:
     """Columns and views keep 4 decimals; responses expose cents."""
@@ -13,6 +15,8 @@ def handle_quantize_money(value) -> Decimal:
 
 Money = Annotated[Decimal, Field(max_digits=15, decimal_places=2)]
 MoneyOut = Annotated[Decimal, BeforeValidator(handle_quantize_money), Field(max_digits=15, decimal_places=2)]
+Text = Annotated[str, BeforeValidator(handle_normalize_text)]
+TextOptional = Annotated[str | None, BeforeValidator(handle_normalize_text)]
 
 
 # ── Bank Account ──────────────────────────────────────────────────────────────
@@ -42,8 +46,8 @@ class TransactionCreate(BaseModel):
     account_id:       int  | None = 0
     transaction_date: date
     value:            Money
-    description:      str
-    category:         str  | None = None
+    description:      Text
+    category:         TextOptional = None
     type:             str  | None = 'debit'
     details:          Optional[dict] = None
     tracking:         bool = True
@@ -73,7 +77,7 @@ class FixedExpenseCreate(BaseModel):
     name:       str
     value:      Money
     due_day:    int = Field(ge=1, le=31)
-    category:   str | None = 'Outros'
+    category:   TextOptional = 'Outros'
     account_id: int | None = None
     is_active:  bool = True
 

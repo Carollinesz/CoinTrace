@@ -11,6 +11,7 @@ from app.models.models import transaction
 from app.repositories import bank_accounts as bank_accounts_repo
 from app.repositories import transactions as repo
 from app.schemas.schemas import TransactionCreate, TransactionUpdate, TransactionUploadResult, UploadRowError
+from app.utils.text_functions import handle_normalize_text
 
 
 def _ensure_account_exists(db: Session, account_id: int) -> None:
@@ -157,7 +158,7 @@ def handle_upload_rows(db: Session, df: pd.DataFrame) -> TransactionUploadResult
         raw_account_id = row.get("account_id", 0)
         row_has_error = False
 
-        parsed_category = str(raw_category).strip()[:100]
+        parsed_category = None if pd.isna(raw_category) else handle_normalize_text(str(raw_category))[:100]
 
         
         def  _error_row_(message):
@@ -202,7 +203,7 @@ def handle_upload_rows(db: Session, df: pd.DataFrame) -> TransactionUploadResult
         try:
             if pd.isna(raw_desc) or str(raw_desc).strip() == "":
                 raise ValueError("description is required")
-            parsed_desc = str(raw_desc).strip()[:100]
+            parsed_desc = handle_normalize_text(str(raw_desc))[:100]
         except (ValueError, InvalidOperation):
             _error_row_("description not accepted")
             row_has_error = True
