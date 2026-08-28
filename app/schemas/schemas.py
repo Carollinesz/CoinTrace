@@ -93,6 +93,14 @@ class TransactionRead(TransactionCreate):
     transaction_id: int
     created_at:     datetime
 
+class TransactionsCategory(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    year_transaction: int
+    month_transaction: int
+    account_id: int
+    category: str
+    value: MoneyOut
 
 # ── Fixed Expense ─────────────────────────────────────────────────────────────
 

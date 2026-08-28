@@ -39,7 +39,7 @@ def list_all(
         stmt = stmt.where(transaction.transaction_date >= date_from)
     if date_to is not None:
         stmt = stmt.where(transaction.transaction_date <= date_to)
-    stmt = stmt.order_by(transaction.transaction_id.desc()).offset(skip).limit(limit)
+    stmt = stmt.order_by(transaction.transaction_date.desc()).offset(skip).limit(limit)
     return list(db.execute(stmt).scalars().all())
 
 
@@ -153,6 +153,43 @@ def list_credit_installments(
         params,
     )
     return list(result.mappings().all())
+
+def list_expenses_by_categorie(
+    db: Session,
+    account_id: int | None = None,
+    category: str | None = None,
+    year_transaction: int | None = None,
+    month_transaction: int | None = None,
+) -> list:
+    stmt = select(
+        transaction.year_transaction,
+        transaction.month_transaction,
+        transaction.account_id,
+        transaction.category,
+        func.sum(transaction.value).label("value"),
+    ).where(transaction.value < 0).where(transaction.tracking.is_(True))
+
+    if account_id is not None:
+        stmt = stmt.where(transaction.account_id == account_id)
+    if category is not None:
+        stmt = stmt.where(transaction.category.ilike(f"%{category}%"))
+    if year_transaction is not None:
+        stmt = stmt.where(transaction.year_transaction == year_transaction)
+    if month_transaction is not None:
+        stmt = stmt.where(transaction.month_transaction == month_transaction)
+
+    stmt = stmt.group_by(
+                    transaction.year_transaction,
+                    transaction.month_transaction,
+                    transaction.account_id,
+                    transaction.category) \
+                .order_by(
+                    transaction.year_transaction.desc(), 
+                    transaction.month_transaction.asc(),
+                    transaction.account_id.asc(),
+                )
+    return list(db.execute(stmt).mappings().all())
+
 
 
 def _description_matches_sql() -> str:

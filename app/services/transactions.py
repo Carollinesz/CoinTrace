@@ -59,6 +59,15 @@ def handle_list(
         date_to=date_to,
     )
 
+def handle_list_categories(
+    db: Session,
+    account_id: int | None,
+    category: str | None,
+    year_transaction: int | None,
+    month_transaction: int | None,
+) -> list:
+    return repo.list_expenses_by_categorie(db,account_id=account_id, category=category, year_transaction=year_transaction, month_transaction=month_transaction)
+
 
 def handle_list_credit_installments(
     db: Session,
