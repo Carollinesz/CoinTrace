@@ -39,6 +39,26 @@ class BankAccountRead(BankAccountCreate):
 
     account_id: int
 
+class BankAccountBalanceRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    account_id:      int
+    account_name:    str
+    account_type:    str
+    start_value:     MoneyOut
+    total_gains:     MoneyOut
+    total_expenses:  MoneyOut
+    current_balance: MoneyOut
+
+class BankAccountEarningsRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    year_transaction: int
+    month_transaction: int
+    account_id: int
+    category: str
+    value: MoneyOut
+
 
 # ── Transaction ───────────────────────────────────────────────────────────────
 
@@ -67,6 +87,9 @@ class TransactionUpdate(BaseModel):
 class TransactionRead(TransactionCreate):
     model_config = ConfigDict(from_attributes=True)
 
+    year_transaction: int
+    month_transaction: int
+    day_transaction: int    
     transaction_id: int
     created_at:     datetime
 
@@ -100,19 +123,9 @@ class FixedExpenseRead(FixedExpenseCreate):
 
 # ── Bank Account Balance View ─────────────────────────────────────────────────
 
-class BankAccountBalanceRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    account_id:      int
-    account_name:    str
-    account_type:    str
-    start_value:     MoneyOut
-    total_gains:     MoneyOut
-    total_expenses:  MoneyOut
-    current_balance: MoneyOut
 
 
-# ── Credit Installments View ──────────────────────────────────────────────────
+# ── Credit Installments ───────────────────────────────────────────────────────
 
 class CreditInstallmentRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)

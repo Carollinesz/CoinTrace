@@ -1,6 +1,6 @@
 import pytest
 
-BASE = "/api/v1/credit-installments"
+BASE = "/api/v1/transactions/credit-installments"
 TRANSACTIONS_BASE = "/api/v1/transactions"
 ACCOUNTS_BASE = "/api/v1/bank-accounts"
 

@@ -26,16 +26,19 @@ class bank_account(Base):
 class transaction(Base):
     __tablename__ = "transactions"
 
-    transaction_id:   Mapped[int]            = mapped_column(init=False, primary_key=True, autoincrement=True)
-    transaction_date: Mapped[date]           = mapped_column(Date, nullable=False)
-    value:            Mapped[Decimal]        = mapped_column(Numeric(10, 4), nullable=False)
-    description:      Mapped[str]            = mapped_column(String(100), nullable=False)
-    account_id:       Mapped[int]            = mapped_column(nullable=False, default=0, server_default="0")
-    type:             Mapped[str]            = mapped_column(String(50), nullable=False, default='debit')
-    details:          Mapped[dict | None]     = mapped_column(JSONB, nullable=True, default=None)
-    category:         Mapped[str]            = mapped_column(String(100), nullable=True, default='Outros')
-    tracking:         Mapped[bool]           = mapped_column(nullable=False, default=True, server_default='true')
-    created_at:       Mapped[datetime]       = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False, init=False)
+    transaction_id:         Mapped[int]            = mapped_column(init=False, primary_key=True, autoincrement=True)
+    transaction_date:       Mapped[date]           = mapped_column(Date, nullable=False)
+    value:                  Mapped[Decimal]        = mapped_column(Numeric(10, 4), nullable=False)
+    description:            Mapped[str]            = mapped_column(String(100), nullable=False)
+    month_transaction:      Mapped[int]            
+    year_transaction:       Mapped[int]            
+    day_transaction:        Mapped[int] 
+    account_id:             Mapped[int]            = mapped_column(nullable=False, default=0, server_default="0")           
+    type:                   Mapped[str]            = mapped_column(String(50), nullable=False, default='debit')
+    details:                Mapped[dict | None]    = mapped_column(JSONB, nullable=True, default=None)
+    category:               Mapped[str]            = mapped_column(String(100), nullable=True, default='Outros')
+    tracking:               Mapped[bool]           = mapped_column(nullable=False, default=True, server_default='true')
+    created_at:             Mapped[datetime]       = mapped_column(TIMESTAMP(timezone=True), server_default=func.now(), nullable=False, init=False)
 
     def __post_init__(self):
         if self.type == "credit":

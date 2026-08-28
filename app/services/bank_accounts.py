@@ -34,6 +34,23 @@ def handle_list(
 ) -> list[bank_account]:
     return repo.list_all(db, skip=skip, limit=limit, account_id=account_id, bank_id=bank_id, account_name=account_name, account_type=account_type)
 
+def handle_list_balances(
+    db: Session,
+    account_id: int | None = None,
+    account_type: str | None = None,
+) -> list:
+    return repo.list_all_balances(db, account_id=account_id, account_type=account_type)
+
+def handle_list_earnings(
+    db: Session,
+    account_id: int | None,
+    category: str | None,
+    year_transaction: int | None,
+    month_transaction: int | None,
+) -> list:
+    return repo.list_earnings(db,account_id=account_id, category=category, year_transaction=year_transaction, month_transaction=month_transaction)
+
+
 
 def handle_create(db: Session, payload: BankAccountCreate) -> bank_account:
     if _find_by_name(db, payload.account_name) is not None:

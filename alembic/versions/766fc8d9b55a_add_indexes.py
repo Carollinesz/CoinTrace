@@ -32,7 +32,20 @@ def upgrade() -> None:
         USING gin (({DESCRIPTION_TSVECTOR}))
         """
     )
+    op.execute(""" 
+                    CREATE INDEX idx_transaction_date ON transactions (transaction_date);
+                    CREATE INDEX idx_transaction_account_categories ON transactions (account_id, category);
+                    CREATE INDEX idx_transaction_date_categories ON transactions (category, year_transaction, month_transaction);
+                    CREATE INDEX idx_transaction_datetime_categories ON transactions (category, transaction_date);
+    """)
+    
 
 
 def downgrade() -> None:
-    op.execute("DROP INDEX IF EXISTS idx_transaction_description")
+    op.execute("""
+    DROP INDEX IF EXISTS idx_transaction_date;
+    DROP INDEX IF EXISTS idx_transaction_description;
+    DROP INDEX IF EXISTS idx_transaction_account_categories;
+    DROP INDEX IF EXISTS idx_transaction_date_categories;
+    DROP INDEX IF EXISTS idx_transaction_datetime_categories;
+    """)

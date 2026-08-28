@@ -85,7 +85,7 @@ After starting the server, open:
 | `PATCH` | `/api/v1/fixed-expenses/{id}` | Update a fixed expense |
 | `DELETE` | `/api/v1/fixed-expenses/{id}` | Delete a fixed expense |
 | `GET` | `/api/v1/account-balances` | View balances per account |
-| `GET` | `/api/v1/credit-installments` | View credit installment breakdown |
+| `GET` | `/api/v1/transactions/credit-installments` | View credit installment breakdown |
 | `GET` | `/api/v1/banks` | List available banks |
 | `GET` | `/health` | Health check |
 

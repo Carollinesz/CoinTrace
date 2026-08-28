@@ -46,9 +46,7 @@ This is a microservice to control personal finances, it won't have a frontend, j
 │   │   │   │   ├── routes/
 │   │   │   │   │   ├── banks.py **table avaliable bank options to register in transactions and bank_accounts**
 │   │   │   │   │   ├── bank_accounts.py **table users' bank_accounts**
-│   │   │   │   │   └── transactions.py **table users' transactions**
-│   │   │   │   │   ├── account_balances.py **view account balance**
-│   │   │   │   │   ├── credit_installments.py **view credit installments from transactions**
+│   │   │   │   │   └── transactions.py **table users' transactions and the credit installments breakdown**
 │   │   │   │   │   └── fixed_expenses.py **table users' fixed expenses**
 │   │   ├── constants/ **Demo dataset**
 │   │   ├── core/ **Core config and database**
@@ -58,19 +56,15 @@ This is a microservice to control personal finances, it won't have a frontend, j
 │   │   ├── models/ **Postgreesql Models**
 │   │   │   └── models.py **banks, transactions and bank_accounts models**
 │   │   ├── repositories/ **Endpoints logic**
-│   │   │   ├── account_balances.py
 │   │   │   ├── banks.py
 │   │   │   ├── bank_accounts.py
-│   │   │   ├── credit_installments.py
 │   │   │   ├── fixed_expenses.py
 │   │   │   └── transactions.py
 │   │   ├── schemas/ **Swagger & Pydentic documentation**
 │   │   │   └── schemas.py
 │   │   ├── services/
-│   │   │   ├── account_balances.py
 │   │   │   ├── banks.py
 │   │   │   ├── bank_accounts.py
-│   │   │   ├── credit_installments.py
 │   │   │   ├── fixed_expenses.py
 │   │   │   └── transactions.py
 │   ├── tests/ **pytest**

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status, H
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.schemas import TransactionCreate, TransactionRead, TransactionUpdate, TransactionUploadResult
+from app.schemas.schemas import CreditInstallmentRead, TransactionCreate, TransactionRead, TransactionUpdate, TransactionUploadResult
 from app.services import transactions as service
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -37,6 +37,32 @@ def handle_list_transactions(
         date_from=date_from,
         date_to=date_to,
     )
+
+
+@router.get("/credit-installments", response_model=list[CreditInstallmentRead])
+def handle_list_credit_installments(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    transaction_id: int | None = Query(None),
+    account_id: int | None = Query(None),
+    description: str | None = Query(None),
+    category: str | None = Query(None),
+    due_date_from: date | None = Query(None),
+    due_date_to: date | None = Query(None),
+    db: Session = Depends(get_db),
+):
+    return service.handle_list_credit_installments(
+        db,
+        skip=skip,
+        limit=limit,
+        transaction_id=transaction_id,
+        account_id=account_id,
+        description=description,
+        category=category,
+        due_date_from=due_date_from,
+        due_date_to=due_date_to,
+    )
+
 
 @router.post("", response_model=TransactionRead, status_code=status.HTTP_201_CREATED)
 def handle_create_transaction(

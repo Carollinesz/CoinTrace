@@ -60,6 +60,30 @@ def handle_list(
     )
 
 
+def handle_list_credit_installments(
+    db: Session,
+    skip: int,
+    limit: int,
+    transaction_id: int | None = None,
+    account_id: int | None = None,
+    description: str | None = None,
+    category: str | None = None,
+    due_date_from: date | None = None,
+    due_date_to: date | None = None,
+) -> list:
+    return repo.list_credit_installments(
+        db,
+        skip=skip,
+        limit=limit,
+        transaction_id=transaction_id,
+        account_id=account_id,
+        description=description,
+        category=category,
+        due_date_from=due_date_from,
+        due_date_to=due_date_to,
+    )
+
+
 def handle_create(db: Session, payload: TransactionCreate) -> transaction:
     _ensure_account_exists(db, payload.account_id)
     return repo.create(db, payload.model_dump())
