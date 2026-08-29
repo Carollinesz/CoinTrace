@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status, H
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.schemas import CreditInstallmentRead, TransactionCreate, TransactionRead, TransactionUpdate, TransactionUploadResult, TransactionsCategory
+from app.schemas.schemas import CreditInstallmentRead, TransactionCreate, TransactionRead, TransactionUpdate, TransactionUploadResult, TransactionsCategory, CreditByAccount
 from app.services import transactions as service
 
 router = APIRouter(prefix="/transactions", tags=["transactions"])
@@ -45,6 +45,7 @@ def handle_list_credit_installments(
     limit: int = Query(100, ge=1, le=500),
     transaction_id: int | None = Query(None),
     account_id: int | None = Query(None),
+    account_name: str | None = Query(None),
     description: str | None = Query(None),
     category: str | None = Query(None),
     due_date_from: date | None = Query(None),
@@ -57,11 +58,37 @@ def handle_list_credit_installments(
         limit=limit,
         transaction_id=transaction_id,
         account_id=account_id,
+        account_name=account_name,
         description=description,
         category=category,
         due_date_from=due_date_from,
         due_date_to=due_date_to,
     )
+
+@router.get("/credit-by-account", response_model=list[CreditByAccount])
+def handle_list_credit_by_account(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=500),
+    account_id: int | None = Query(None),
+    account_name: str | None = Query(None),
+    due_date_from: date | None = Query(None),
+    due_date_to: date | None = Query(None),
+    year: int | None = Query(None),
+    month: int | None = Query(None),
+    db: Session = Depends(get_db),
+):
+    return service.handle_list_credit_by_account(
+        db,
+        skip=skip,
+        limit=limit,
+        account_name=account_name,
+        year=year,
+        month=month,
+        account_id=account_id,
+        due_date_from=due_date_from,
+        due_date_to=due_date_to,
+    )
+
 
 @router.get("/categories", response_model=list[TransactionsCategory])
 def handle_list_categories(

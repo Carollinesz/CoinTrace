@@ -1,6 +1,6 @@
 from decimal import Decimal
 from datetime import datetime, date
-from sqlalchemy import CheckConstraint, Date, ForeignKey, Numeric, String, TIMESTAMP, func
+from sqlalchemy import CheckConstraint, Computed, Date, ForeignKey, Numeric, String, TIMESTAMP, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, registry, MappedAsDataclass
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -30,9 +30,10 @@ class transaction(Base):
     transaction_date:       Mapped[date]           = mapped_column(Date, nullable=False)
     value:                  Mapped[Decimal]        = mapped_column(Numeric(10, 4), nullable=False)
     description:            Mapped[str]            = mapped_column(String(100), nullable=False)
-    month_transaction:      Mapped[int]            
-    year_transaction:       Mapped[int]            
-    day_transaction:        Mapped[int] 
+    # Filled by Postgres from transaction_date, never by the application.
+    year_transaction:       Mapped[int]            = mapped_column(Computed("EXTRACT(year FROM transaction_date)", persisted=True), nullable=True, init=False)
+    month_transaction:      Mapped[int]            = mapped_column(Computed("EXTRACT(month FROM transaction_date)", persisted=True), nullable=True, init=False)
+    day_transaction:        Mapped[int]            = mapped_column(Computed("EXTRACT(day FROM transaction_date)", persisted=True), nullable=True, init=False)
     account_id:             Mapped[int]            = mapped_column(nullable=False, default=0, server_default="0")           
     type:                   Mapped[str]            = mapped_column(String(50), nullable=False, default='debit')
     details:                Mapped[dict | None]    = mapped_column(JSONB, nullable=True, default=None)

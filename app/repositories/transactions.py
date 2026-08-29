@@ -43,10 +43,6 @@ def list_all(
     return list(db.execute(stmt).scalars().all())
 
 
-# Descriptions mix both languages ("Mercado Livre", "Netflix subscription"), so each side of
-# the match concatenates one expression per config: a word stemmed by either dictionary hits,
-# and a stopword in one language still survives through the other. Adding a language here means
-# recreating the GIN index in migration 766fc8d9b55a with the same expression.
 SEARCH_CONFIGS = ("portuguese", "english")
 
 
@@ -115,6 +111,7 @@ def list_credit_installments(
     limit: int = 100,
     transaction_id: int | None = None,
     account_id: int | None = None,
+    account_name: str | None = None,
     description: str | None = None,
     category: str | None = None,
     due_date_from: date | None = None,
@@ -135,6 +132,9 @@ def list_credit_installments(
     if category is not None:
         conditions.append("category ILIKE :category")
         params["category"] = f"%{category}%"
+    if account_name is not None:
+        conditions.append("account_name ILIKE :account_name")
+        params["account_name"] = f"%{account_name}%"
     if due_date_from is not None:
         conditions.append("due_date >= :due_date_from")
         params["due_date_from"] = due_date_from
@@ -145,14 +145,78 @@ def list_credit_installments(
     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     result = db.execute(
         text(f"""
-            SELECT * FROM ({CREDIT_INSTALLMENTS_SQL}) installments
+            SELECT ci.*, ba.account_name FROM ({CREDIT_INSTALLMENTS_SQL}) ci
             {where_clause}
-            ORDER BY transaction_id, installment_number
+            LEFT JOIN bank_accounts ba ON ci.account_id = ba.account_id
+            ORDER BY installment_number ASC, due_date DESC
             OFFSET :skip LIMIT :limit
         """),
         params,
     )
     return list(result.mappings().all())
+
+
+def list_credit_by_account(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    account_id: int | None = None,
+    account_name:str | None = None,
+    due_date_from: date | None = None,
+    due_date_to: date | None = None,
+    year: int | None = None,
+    month: int | None = None
+) -> list:
+    conditions = []
+    params: dict = {"skip": skip, "limit": limit}
+
+    if account_id is not None:
+        conditions.append("account_id = :account_id")
+        params["account_id"] = account_id
+    if account_name is not None:
+        conditions.append("account_name = :account_name")
+        params["account_name"] = account_name
+    if due_date_from is not None:
+        conditions.append("due_date >= :due_date_from")
+        params["due_date_from"] = due_date_from
+    if due_date_to is not None:
+        conditions.append("due_date <= :due_date_to")
+        params["due_date_to"] = due_date_to
+    if year is not None:
+        conditions.append("year = :year")
+        params["year"] = year
+    if month is not None:
+        conditions.append("month = :month")
+        params["month"] = month
+
+
+    where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+    result = db.execute(
+        text(f"""
+            WITH credit_consolidate AS (
+                SELECT 
+                    ci.account_id, 
+                    account_name, 
+                    due_date, 
+                    EXTRACT(year FROM due_date) AS year,  
+                    EXTRACT(month FROM due_date) AS month,
+                    SUM(installment_value) AS value 
+                FROM ({CREDIT_INSTALLMENTS_SQL}) ci
+                LEFT JOIN bank_accounts ba ON ci.account_id = ba.account_id
+	            GROUP BY due_date, ci.account_id, account_name
+            )
+            SELECT 
+                *
+            FROM credit_consolidate
+            {where_clause}
+            ORDER BY due_date DESC, account_id ASC
+            OFFSET :skip LIMIT :limit
+        """),
+        params,
+    )
+    return list(result.mappings().all())
+
+
 
 def list_expenses_by_categorie(
     db: Session,

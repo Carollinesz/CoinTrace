@@ -140,6 +140,7 @@ class CreditInstallmentRead(BaseModel):
 
     transaction_id:     int
     account_id:         int | None
+    account_name:       str 
     description:        str
     category:           str | None
     transaction_date:   date
@@ -150,6 +151,13 @@ class CreditInstallmentRead(BaseModel):
     interest_rate:      Decimal
     installment_value:  MoneyOut
 
+class CreditByAccount(BaseModel):
+    account_id:         int | None
+    due_date:           date
+    account_name:       str | None
+    year:               int | None
+    month:              int | None
+    value:              MoneyOut
 
 # ── Upload ────────────────────────────────────────────────────────────────────
 

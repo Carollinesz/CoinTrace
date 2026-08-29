@@ -75,6 +75,7 @@ def handle_list_credit_installments(
     limit: int,
     transaction_id: int | None = None,
     account_id: int | None = None,
+    account_name: str | None = None,
     description: str | None = None,
     category: str | None = None,
     due_date_from: date | None = None,
@@ -86,8 +87,32 @@ def handle_list_credit_installments(
         limit=limit,
         transaction_id=transaction_id,
         account_id=account_id,
+        account_name=account_name,
         description=description,
         category=category,
+        due_date_from=due_date_from,
+        due_date_to=due_date_to,
+    )
+
+def handle_list_credit_by_account(
+    db: Session,
+    skip: int,
+    limit: int,
+    account_id: int | None = None,
+    account_name:str | None = None,
+    due_date_from: date | None = None,
+    due_date_to: date | None = None,
+    year: int | None = None,
+    month: int | None = None
+) -> list:
+    return repo.list_credit_by_account(
+        db,
+        skip=skip,
+        limit=limit,
+        account_name=account_name,
+        year=year,
+        month=month,
+        account_id=account_id,
         due_date_from=due_date_from,
         due_date_to=due_date_to,
     )
