@@ -1,7 +1,7 @@
 """add description indexes
 
 Revision ID: 766fc8d9b55a
-Revises: 0a42e6f4598b
+Revises: e1e679c84ec1
 Create Date: 2026-08-25 00:09:10.667185
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 revision: str = '766fc8d9b55a'
-down_revision: Union[str, None] = '0a42e6f4598b'
+down_revision: Union[str, None] = 'e1e679c84ec1'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -32,20 +32,14 @@ def upgrade() -> None:
         USING gin (({DESCRIPTION_TSVECTOR}))
         """
     )
-    op.execute(""" 
-                    CREATE INDEX idx_transaction_date ON transactions (transaction_date);
-                    CREATE INDEX idx_transaction_account_categories ON transactions (account_id, category);
-                    CREATE INDEX idx_transaction_date_categories ON transactions (category, year_transaction, month_transaction);
-                    CREATE INDEX idx_transaction_datetime_categories ON transactions (category, transaction_date);
-    """)
+    op.execute("CREATE INDEX idx_transaction_date ON transactions (transaction_date)")
+    op.execute("CREATE INDEX idx_transaction_account_categories ON transactions (account_id, category)")
+    op.execute("CREATE INDEX idx_transaction_date_categories ON transactions (category, year_transaction, month_transaction)")
+    op.execute("CREATE INDEX idx_transaction_datetime_categories ON transactions (category, transaction_date)")
     
-
-
 def downgrade() -> None:
-    op.execute("""
-    DROP INDEX IF EXISTS idx_transaction_date;
-    DROP INDEX IF EXISTS idx_transaction_description;
-    DROP INDEX IF EXISTS idx_transaction_account_categories;
-    DROP INDEX IF EXISTS idx_transaction_date_categories;
-    DROP INDEX IF EXISTS idx_transaction_datetime_categories;
-    """)
+    op.execute("DROP INDEX IF EXISTS idx_transaction_date")
+    op.execute("DROP INDEX IF EXISTS idx_transaction_description")
+    op.execute("DROP INDEX IF EXISTS idx_transaction_account_categories")
+    op.execute("DROP INDEX IF EXISTS idx_transaction_date_categories")
+    op.execute("DROP INDEX IF EXISTS idx_transaction_datetime_categories")
