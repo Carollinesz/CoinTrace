@@ -52,7 +52,7 @@ def _ensure_database_exists(safe_url: str) -> None:
         system_engine.dispose()
 
 
-DB_Name = "/demo_db_v1" if settings.DEMO else "/financial_api_V1"
+DB_Name = "/demo_db_v1" if settings.DEMO else "/cointrace_api_V1"
 
 
 _ensure_user_exists( _build_safe_url(settings.MIGRATION_DATABASE_URL + DB_Name))

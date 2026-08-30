@@ -1,6 +1,6 @@
-# financial-api
+# CoinTrace
 
-Personal finance REST API to track transactions, bank accounts, fixed expenses, and credit installments.
+Personal finance REST API to track your transactions, accounts, expensess, and credit installments. 
 
 ## Features
 

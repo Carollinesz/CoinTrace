@@ -21,6 +21,7 @@ services:
       - "8000:8000"
     env_file: .env
     environment:
+      LOCAL: "False"
       DATABASE_URL: postgresql+psycopg2://${USERNAME_API}:${USERNAME_PASSWORD}@db:5432
       MIGRATION_DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432
     depends_on:

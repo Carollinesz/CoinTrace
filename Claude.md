@@ -32,51 +32,10 @@ This is a microservice to control personal finances, it won't have a frontend, j
 - **Clean logic**: Keep core logic clean and push implementation details to the edges
 - **File Organsiation**: Balance file organization with simplicity - use an appropriate number of files for the project scale
 
-## project structure
-
-
-│   ├── .claude/
-│   │   └── settings.local.json
-│   ├── alembic/ **Database Migrations**
-│   ├── app/ **Main application**
-│   │   └── main.py **Fast API init**
-│   │   ├── api/ **API Routes**
-│   │   │   ├── v1/
-│   │   │   │   └── router.py
-│   │   │   │   ├── routes/
-│   │   │   │   │   ├── banks.py **table avaliable bank options to register in transactions and bank_accounts**
-│   │   │   │   │   ├── bank_accounts.py **table users' bank_accounts**
-│   │   │   │   │   └── transactions.py **table users' transactions and the credit installments breakdown**
-│   │   │   │   │   └── fixed_expenses.py **table users' fixed expenses**
-│   │   ├── constants/ **Demo dataset**
-│   │   ├── core/ **Core config and database**
-│   │   │   ├── config.py **ignore**
-│   │   │   ├── database.py **database connection**
-│   │   │   └── demo_seed.py **insert demo dataset in database**
-│   │   ├── models/ **Postgreesql Models**
-│   │   │   └── models.py **banks, transactions and bank_accounts models**
-│   │   ├── repositories/ **Endpoints logic**
-│   │   │   ├── banks.py
-│   │   │   ├── bank_accounts.py
-│   │   │   ├── fixed_expenses.py
-│   │   │   └── transactions.py
-│   │   ├── schemas/ **Swagger & Pydentic documentation**
-│   │   │   └── schemas.py
-│   │   ├── services/
-│   │   │   ├── banks.py
-│   │   │   ├── bank_accounts.py
-│   │   │   ├── fixed_expenses.py
-│   │   │   └── transactions.py
-│   ├── tests/ **pytest**
-│   │   └── conftest.py
-
 ## Setup
 
 Activate the conda environment (dependencies already installed):
 
-```bash
-conda activate financial-control
-```
 
 Copy environment variables:
 

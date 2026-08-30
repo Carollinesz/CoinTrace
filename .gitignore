@@ -38,6 +38,9 @@ _fix_encoding.py
 .DS_Store
 Thumbs.db
 
+.gitmodules
+
 # .claude
 settings.json
 settings.local.json
+.claude/Claude.md
