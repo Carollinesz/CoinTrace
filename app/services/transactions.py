@@ -117,6 +117,25 @@ def handle_list_credit_by_account(
         due_date_to=due_date_to,
     )
 
+def handle_list_credit_by_due_date(
+    db: Session,
+    skip: int,
+    limit: int,
+    due_date_from: date | None = None,
+    due_date_to: date | None = None,
+    year: int | None = None,
+    month: int | None = None
+) -> list:
+    return repo.list_credit_by_due_date(
+        db,
+        skip=skip,
+        limit=limit,
+        year=year,
+        month=month,
+        due_date_from=due_date_from,
+        due_date_to=due_date_to,
+    )
+
 
 def handle_create(db: Session, payload: TransactionCreate) -> transaction:
     _ensure_account_exists(db, payload.account_id)

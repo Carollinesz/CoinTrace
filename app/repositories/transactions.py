@@ -77,7 +77,7 @@ CREDIT_INSTALLMENTS_SQL = """
         t.description,
         t.category,
         t.transaction_date,
-        t.value                                                      AS total_value,
+        t.value * -1                                                 AS total_value,
         (t.details->>'installments')::int                            AS total_installments,
         gs.n                                                         AS installment_number,
         (t.details->>'first_payment')::date
@@ -95,7 +95,7 @@ CREDIT_INSTALLMENTS_SQL = """
                     / (POWER(1 + (t.details->>'interest')::numeric,
                              (t.details->>'installments')::int) - 1),
                     4)
-        END                                                          AS installment_value
+        END * -1                                                            AS installment_value
     FROM transactions t
     CROSS JOIN LATERAL generate_series(1, (t.details->>'installments')::int) AS gs(n)
     WHERE t.type = 'credit'
@@ -215,6 +215,57 @@ def list_credit_by_account(
         params,
     )
     return list(result.mappings().all())
+
+def list_credit_by_due_date(
+    db: Session,
+    skip: int = 0,
+    limit: int = 100,
+    due_date_from: date | None = None,
+    due_date_to: date | None = None,
+    year: int | None = None,
+    month: int | None = None
+) -> list:
+    conditions = []
+    params: dict = {"skip": skip, "limit": limit}
+
+    if due_date_from is not None:
+        conditions.append("due_date >= :due_date_from")
+        params["due_date_from"] = due_date_from
+    if due_date_to is not None:
+        conditions.append("due_date <= :due_date_to")
+        params["due_date_to"] = due_date_to
+    if year is not None:
+        conditions.append("year = :year")
+        params["year"] = year
+    if month is not None:
+        conditions.append("month = :month")
+        params["month"] = month
+
+
+    where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+    result = db.execute(
+        text(f"""
+            WITH credit_consolidate AS (
+                SELECT 
+                    due_date, 
+                    EXTRACT(year FROM due_date) AS year,  
+                    EXTRACT(month FROM due_date) AS month,
+                    SUM(installment_value) AS value 
+                FROM ({CREDIT_INSTALLMENTS_SQL}) ci
+                LEFT JOIN bank_accounts ba ON ci.account_id = ba.account_id
+	            GROUP BY due_date
+            )
+            SELECT 
+                *
+            FROM credit_consolidate
+            {where_clause}
+            ORDER BY due_date DESC
+            OFFSET :skip LIMIT :limit
+        """),
+        params,
+    )
+    return list(result.mappings().all())
+
 
 
 

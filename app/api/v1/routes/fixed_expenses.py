@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.schemas import FixedExpenseCreate, FixedExpenseRead, FixedExpenseUpdate
+from app.schemas.schemas import FixedExpenseCreate, FixedExpenseRead, FixedExpenseUpdate, CurrentExpensesRead, MonthlyBalanceRead
 from app.services import fixed_expenses as service
 
 router = APIRouter(prefix="/fixed-expenses", tags=["fixed-expenses"])
@@ -19,6 +19,15 @@ def handle_list_fixed_expenses(
     db: Session = Depends(get_db),
 ):
     return service.handle_list(db, skip=skip, limit=limit, expense_id=expense_id, account_id=account_id, category=category, is_active=is_active)
+
+
+@router.get("/current-spending", response_model=CurrentExpensesRead, status_code=status.HTTP_200_OK)
+def handle_current_spending(db: Session = Depends(get_db)):
+    return service.current_spending(db)
+
+@router.get("/money-after-expenses", response_model=list[MonthlyBalanceRead], status_code=status.HTTP_200_OK)
+def handle_money_after_all_expenses(db: Session = Depends(get_db)):
+    return service.money_after_all_expenses(db)
 
 
 @router.post("", response_model=FixedExpenseRead, status_code=status.HTTP_201_CREATED)

@@ -56,9 +56,13 @@ class BankAccountEarningsRead(BaseModel):
     year_transaction: int
     month_transaction: int
     account_id: int
+    account_name: str
     category: str
     value: MoneyOut
 
+
+class CurrentBalanceRead(BaseModel):
+    current_balance: MoneyOut
 
 # ── Transaction ───────────────────────────────────────────────────────────────
 
@@ -128,6 +132,18 @@ class FixedExpenseRead(FixedExpenseCreate):
     expense_id: int
     created_at: datetime
 
+class CurrentExpensesRead(BaseModel):
+    value: MoneyOut
+
+
+class MonthlyBalanceRead(BaseModel):
+    year:            int
+    month:           int
+    credit_expenses: MoneyOut
+    fixed_expenses:  MoneyOut
+    total_expenses:  MoneyOut
+    balance:         MoneyOut
+
 
 # ── Bank Account Balance View ─────────────────────────────────────────────────
 
@@ -151,13 +167,16 @@ class CreditInstallmentRead(BaseModel):
     interest_rate:      Decimal
     installment_value:  MoneyOut
 
-class CreditByAccount(BaseModel):
-    account_id:         int | None
+class CreditByDate(BaseModel):
     due_date:           date
-    account_name:       str | None
     year:               int | None
     month:              int | None
     value:              MoneyOut
+
+class CreditByAccount(CreditByDate):
+    account_id:         int | None
+    account_name:       str | None
+
 
 # ── Upload ────────────────────────────────────────────────────────────────────
 

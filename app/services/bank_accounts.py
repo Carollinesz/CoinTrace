@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.models.models import bank_account
 from app.repositories import bank_accounts as repo
-from app.schemas.schemas import BankAccountCreate, BankAccountUpdate
+from app.schemas.schemas import BankAccountCreate, BankAccountUpdate,  CurrentBalanceRead
 
 _MAX_LOOKUP = 500  # matches the highest `limit` the endpoints accept
 
@@ -37,18 +37,30 @@ def handle_list(
 def handle_list_balances(
     db: Session,
     account_id: int | None = None,
+    account_name: str | None = None,
     account_type: str | None = None,
 ) -> list:
-    return repo.list_all_balances(db, account_id=account_id, account_type=account_type)
+    return repo.list_all_balances(db, account_id=account_id, account_type=account_type, account_name=account_name)
+
+
+def handle_list_current_balance(db: Session) -> CurrentBalanceRead:
+    return CurrentBalanceRead(current_balance=repo.list_current_total_money(db))
 
 def handle_list_earnings(
     db: Session,
     account_id: int | None,
+    account_name: str | None,
     category: str | None,
     year_transaction: int | None,
     month_transaction: int | None,
 ) -> list:
-    return repo.list_earnings(db,account_id=account_id, category=category, year_transaction=year_transaction, month_transaction=month_transaction)
+    return repo.list_earnings(
+        db,
+        account_id=account_id,
+        account_name=account_name, 
+        category=category, 
+        year_transaction=year_transaction, 
+        month_transaction=month_transaction)
 
 
 

@@ -1,3 +1,6 @@
+from sqlalchemy.engine.row import RowMapping
+
+
 from sqlalchemy import select, text, func
 from sqlalchemy.orm import Session
 from app.schemas.schemas import BankAccountCreate
@@ -22,11 +25,12 @@ def list_all(
     if account_type is not None:
         stmt = stmt.where(bank_account.account_type.ilike(f"%{account_type}%"))
     stmt = stmt.offset(skip).limit(limit)
-    return list(db.execute(stmt).scalars().all())
+    return list[bank_account](db.execute(stmt).scalars().all())
 
 def list_all_balances(
     db: Session,
     account_id: int | None = None,
+    account_name: str | None = None,
     account_type: str | None = None,
 ) -> list:
     conditions = []
@@ -35,9 +39,12 @@ def list_all_balances(
     if account_id is not None:
         conditions.append("ba.account_id = :account_id")
         params["account_id"] = account_id
+    if account_name is not None:
+        conditions.append("ba.account_name ILIKE :account_name")
+        params["account_name"] = f"%{account_name}%"
     if account_type is not None:
-        conditions.append("ba.account_type = :account_type")
-        params["account_type"] = account_type
+        conditions.append("ba.account_type ILIKE :account_type")
+        params["account_type"] = f"%{account_type}%"
 
     where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     result = db.execute(
@@ -63,9 +70,25 @@ def list_all_balances(
     )
     return result.mappings().all()
 
+
+def list_current_total_money(db:Session):
+    result = db.execute(text(f"""
+    SELECT
+        (SELECT COALESCE(SUM(start_value), 0) FROM bank_accounts) 
+        + COALESCE(SUM(t.value) FILTER (WHERE t.tracking = true AND t.value > 0), 0) 
+        - COALESCE(SUM(ABS(t.value)) FILTER (WHERE t.tracking = true AND t.value < 0), 0) AS current_balance
+    FROM bank_accounts ba
+    LEFT JOIN transactions t ON t.account_id = ba.account_id
+    
+    """))
+
+    return result.scalar_one()
+
+    
 def list_earnings(
     db: Session,
     account_id: int | None = None,
+    account_name: str | None = None,
     category: str | None = None,
     year_transaction: int | None = None,
     month_transaction: int | None = None,
@@ -75,11 +98,14 @@ def list_earnings(
         transaction.month_transaction,
         transaction.account_id,
         transaction.category,
+        bank_account.account_name,
         func.sum(transaction.value).label("value"),
-    ).where(transaction.value > 0).where(transaction.tracking.is_(True))
+    ).where(transaction.value > 0).where(transaction.tracking.is_(True)).outerjoin(bank_account, transaction.account_id == bank_account.account_id )
 
     if account_id is not None:
         stmt = stmt.where(transaction.account_id == account_id)
+    if account_name is not None:
+        stmt = stmt.where(bank_account.account_name.ilike(f"%{account_name}%"))    
     if category is not None:
         stmt = stmt.where(transaction.category.ilike(f"%{category}%"))
     if year_transaction is not None:
@@ -91,13 +117,14 @@ def list_earnings(
                     transaction.year_transaction,
                     transaction.month_transaction,
                     transaction.account_id,
+                    bank_account.account_name,
                     transaction.category) \
                 .order_by(
                     transaction.year_transaction.desc(), 
                     transaction.month_transaction.asc(),
                     transaction.account_id.asc(),
                 )
-    return list(db.execute(stmt).mappings().all())
+    return list[RowMapping](db.execute(stmt).mappings().all())
 
 
 def create(db: Session, data: dict) -> bank_account:

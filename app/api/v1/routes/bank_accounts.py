@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.schemas import BankAccountCreate, BankAccountRead, BankAccountUpdate, BankAccountBalanceRead, BankAccountEarningsRead
+from app.schemas.schemas import BankAccountCreate, BankAccountRead, BankAccountUpdate, BankAccountBalanceRead, BankAccountEarningsRead, CurrentBalanceRead
 from app.services import bank_accounts as service
 
 router = APIRouter(prefix="/bank-accounts", tags=["bank-accounts"])
@@ -18,25 +18,47 @@ def handle_list_bank_accounts(
     account_type: str | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    return service.handle_list(db, skip=skip, limit=limit, account_id=account_id, bank_id=bank_id, account_name=account_name, account_type=account_type)
+    return service.handle_list(
+        db, 
+        skip=skip, limit=limit, 
+        account_id=account_id, 
+        bank_id=bank_id, 
+        account_name=account_name, 
+        account_type=account_type)
 
 @router.get("/account-balances", response_model=list[BankAccountBalanceRead])
 def handle_list_account_balances(
     account_id: int | None = Query(None),
+    account_name: str | None = Query(None),
     account_type: str | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    return service.handle_list_balances(db, account_id=account_id, account_type=account_type)
+    return service.handle_list_balances(
+        db, 
+        account_id=account_id, 
+        account_type=account_type, 
+        account_name=account_name)
 
 @router.get("/account-earnings", response_model=list[BankAccountEarningsRead])
 def handle_list_account_earnings(
     account_id: int | None = Query(None),
+    account_name: str | None = Query(None),
     category: str | None = Query(None),
     year_transaction: int | None = Query(None),
     month_transaction: int | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    return service.handle_list_earnings(db, account_id=account_id, category=category, year_transaction=year_transaction, month_transaction=month_transaction)
+    return service.handle_list_earnings(
+        db, 
+        account_id=account_id,
+        account_name=account_name, 
+        category=category, 
+        year_transaction=year_transaction, 
+        month_transaction=month_transaction)
+
+@router.get("/current-balance", response_model=CurrentBalanceRead)
+def handle_list_current_balance(db: Session = Depends(get_db)):
+    return service.handle_list_current_balance(db)
 
 
 @router.post("", response_model=BankAccountRead, status_code=status.HTTP_201_CREATED)

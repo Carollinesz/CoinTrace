@@ -1,4 +1,7 @@
-from sqlalchemy import select
+from decimal import Decimal
+
+
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from app.models.models import fixed_expense
@@ -13,6 +16,7 @@ def list_all(
     is_active: bool | None = None,
 ) -> list[fixed_expense]:
     stmt = select(fixed_expense)
+
     if expense_id is not None:
         stmt = stmt.where(fixed_expense.expense_id == expense_id)
     if account_id is not None:
@@ -22,7 +26,12 @@ def list_all(
     if is_active is not None:
         stmt = stmt.where(fixed_expense.is_active == is_active)
     stmt = stmt.offset(skip).limit(limit)
-    return list(db.execute(stmt).scalars().all())
+    return list[fixed_expense](db.execute(stmt).scalars().all())
+
+
+def current_spending(db: Session) -> Decimal:
+    stmt = select(func.coalesce(func.sum(fixed_expense.value), 0)).where(fixed_expense.is_active.is_(True))
+    return db.execute(stmt).scalar_one()
 
 
 def create(db: Session, data: dict) -> fixed_expense:
