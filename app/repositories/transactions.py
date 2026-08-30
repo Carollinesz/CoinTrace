@@ -6,7 +6,8 @@ from functools import reduce
 
 from sqlalchemy import func, literal_column, select, text
 from sqlalchemy.orm import Session
-from app.models.models import transaction
+from sqlalchemy.engine.row import RowMapping
+from app.models.models import transaction, bank_account
 from app.schemas.schemas import TransactionCreate
 
 def list_all(
@@ -16,13 +17,28 @@ def list_all(
     description: str | None = None,
     transaction_id: int | None = None,
     account_id: int | None = None,
+    account_name: str | None = None,
     type: str | None = None,
     category: str | None = None,
     tracking: bool | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
-) -> list[transaction]:
-    stmt = select(transaction)
+):
+    stmt = select(
+        transaction.account_id,
+        transaction.transaction_id,
+        transaction.transaction_date,
+        transaction.value,
+        transaction.description,
+        transaction.category,
+        transaction.type,
+        transaction.details,
+        transaction.tracking,
+        transaction.year_transaction,
+        transaction.month_transaction,
+        transaction.day_transaction,
+        transaction.created_at,
+        bank_account.account_name).outerjoin(bank_account, transaction.account_id == bank_account.account_id)
     if transaction_id is not None:
         stmt = stmt.where(transaction.transaction_id == transaction_id)
     if description is not None:
@@ -33,14 +49,20 @@ def list_all(
         stmt = stmt.where(transaction.type == type)
     if category is not None:
         stmt = stmt.where(transaction.category.ilike(f"%{category}%"))
+    if account_name is not None:
+        stmt = stmt.where(bank_account.account_name.ilike(f"%{account_name}%"))
     if tracking is not None:
         stmt = stmt.where(transaction.tracking == tracking)
     if date_from is not None:
         stmt = stmt.where(transaction.transaction_date >= date_from)
     if date_to is not None:
         stmt = stmt.where(transaction.transaction_date <= date_to)
-    stmt = stmt.order_by(transaction.transaction_date.desc()).offset(skip).limit(limit)
-    return list(db.execute(stmt).scalars().all())
+    # transaction_id breaks ties so pages stay stable when several rows share a date.
+    stmt = stmt.order_by(
+        transaction.transaction_date.desc(), transaction.transaction_id.desc()
+    ).offset(skip).limit(limit)
+
+    return list[RowMapping](db.execute(stmt).mappings().all())
 
 
 SEARCH_CONFIGS = ("portuguese", "english")
@@ -317,6 +339,11 @@ def _description_matches_sql() -> str:
         f"plainto_tsquery('{config}', :description)" for config in SEARCH_CONFIGS
     )
     return f"({vector}) @@ ({query})"
+
+
+def get(db: Session, transaction_id: int) -> transaction | None:
+    # list_all returns read-only row mappings; mutations need the ORM entity.
+    return db.get(transaction, transaction_id)
 
 
 def create(db: Session, data: dict) -> transaction:

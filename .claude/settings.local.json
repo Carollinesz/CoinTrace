@@ -17,7 +17,8 @@
       "Bash(cp smoke.mjs .claude/skills/run-personal-wallet/driver.mjs && ls .claude/skills/run-personal-wallet/)",
       "Bash(node .claude/skills/run-personal-wallet/driver.mjs)",
       "Bash(node .claude/skills/run-personal-wallet/driver.mjs transactions)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(python -c ' *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Zerbinatti\\Desktop\\Projetos\\personal-wallet\\.claude\\skills\\run-personal-wallet"

@@ -91,6 +91,7 @@ class TransactionUpdate(BaseModel):
 class TransactionRead(TransactionCreate):
     model_config = ConfigDict(from_attributes=True)
 
+    account_name: str | None = None  # outer join: transactions with no account have none
     year_transaction: int
     month_transaction: int
     day_transaction: int    

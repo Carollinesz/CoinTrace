@@ -22,14 +22,27 @@ def _ensure_account_exists(db: Session, account_id: int) -> None:
         )
 
 
-def handle_get(db: Session, transaction_id: int) -> transaction:
+def _handle_not_found(transaction_id: int) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Transaction {transaction_id} not found",
+    )
+
+
+def handle_get(db: Session, transaction_id: int):
+    """Row shaped for TransactionRead — carries the joined account_name."""
     matches = repo.list_all(db, skip=0, limit=1, transaction_id=transaction_id)
     if not matches:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Transaction {transaction_id} not found",
-        )
+        raise _handle_not_found(transaction_id)
     return matches[0]
+
+
+def handle_get_entity(db: Session, transaction_id: int) -> transaction:
+    """ORM entity, for the paths that update or delete the row."""
+    obj = repo.get(db, transaction_id)
+    if obj is None:
+        raise _handle_not_found(transaction_id)
+    return obj
 
 
 def handle_list(
@@ -39,12 +52,13 @@ def handle_list(
     description: str | None = None,
     transaction_id: int | None = None,
     account_id: int | None = None,
+    account_name: str | None = None,
     type: str | None = None,
     category: str | None = None,
     tracking: bool | None = None,
     date_from: date | None = None,
     date_to: date | None = None,
-) -> list[transaction]:
+) -> list:
     return repo.list_all(
         db,
         skip=skip,
@@ -52,6 +66,7 @@ def handle_list(
         description=description,
         transaction_id=transaction_id,
         account_id=account_id,
+        account_name=account_name,
         type=type,
         category=category,
         tracking=tracking,
@@ -137,9 +152,10 @@ def handle_list_credit_by_due_date(
     )
 
 
-def handle_create(db: Session, payload: TransactionCreate) -> transaction:
+def handle_create(db: Session, payload: TransactionCreate):
     _ensure_account_exists(db, payload.account_id)
-    return repo.create(db, payload.model_dump())
+    obj = repo.create(db, payload.model_dump())
+    return handle_get(db, obj.transaction_id)
 
 
 _UPDATABLE_FIELDS = {"account_id", "transaction_date", "value", "description", "category", "tracking"}
@@ -151,8 +167,8 @@ def _merge_update_data(obj: transaction, data: dict) -> dict:
 
 def handle_update(
     db: Session, transaction_id: int, payload: TransactionUpdate
-) -> transaction:
-    obj = handle_get(db, transaction_id)
+):
+    obj = handle_get_entity(db, transaction_id)
     data = payload.model_dump(exclude_unset=True)
     invalid_fields = set(data.keys()) - _UPDATABLE_FIELDS
     if invalid_fields:
@@ -165,12 +181,12 @@ def handle_update(
 
     if data["account_id"] != obj.account_id:
         _ensure_account_exists(db, data["account_id"])
-    return repo.update(db, obj, data)
+    repo.update(db, obj, data)
+    return handle_get(db, transaction_id)
 
 
 def handle_delete(db: Session, transaction_id: int) -> None:
-    obj = handle_get(db, transaction_id)
-    repo.delete(db, obj)
+    repo.delete(db, handle_get_entity(db, transaction_id))
 
 
 _REQUIRED_COLUMNS = {"transaction_date", "value", "description"}

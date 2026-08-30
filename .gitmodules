@@ -1,0 +1,3 @@
+[submodule ".claude/skills/cointrace-api-instructions"]
+	path = .claude/skills/cointrace-api-instructions
+	url = https://github.com/Carollinesz/cointrace-api-instructions.git

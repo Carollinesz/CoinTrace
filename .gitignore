@@ -37,3 +37,7 @@ _fix_encoding.py
 # OS
 .DS_Store
 Thumbs.db
+
+# .claude
+settings.json
+settings.local.json

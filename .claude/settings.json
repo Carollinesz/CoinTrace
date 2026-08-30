@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Edit(/.claude/skills/cointrace-api-instructions/**)",
+      "PowerShell(git stash push -- app tests; $env:PYTHONPATH = \\(Get-Location\\).Path; & C:\\\\ProgramData\\\\anaconda3\\\\Scripts\\\\conda.exe run -n financial-control python -m pytest tests -q --tb=no 2>&1 | Select-String -Pattern \"failed|passed\" | Select-Object -Last 3)",
+      "PowerShell($env:PYTHONPATH = \\(Get-Location\\).Path; & C:\\\\ProgramData\\\\anaconda3\\\\Scripts\\\\conda.exe run -n financial-control python -m pytest tests/integration/test_transactions.py -x -q 2>&1 | Select-Object -Last 60)",
+      "PowerShell($env:PYTHONPATH = \\(Get-Location\\).Path; & C:\\\\ProgramData\\\\anaconda3\\\\Scripts\\\\conda.exe run -n financial-control python -m pytest tests -q 2>&1 | Select-Object -Last 40)"
     ]
   }
 }
