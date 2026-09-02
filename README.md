@@ -1,6 +1,16 @@
+<img align="center" height="200" alt="CoinTrace Banner" title="CoinTrace" src="https://i.imgur.com/0Np8SdO.png"/>
+
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![Python](https://img.shields.io/badge/python-%233670A0.svg?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/sqlalchemy-%23D71F00.svg?style=for-the-badge&logo=sqlalchemy&logoColor=white)
+![Alembic](https://img.shields.io/badge/alembic-%cfcb0a.svg?style=for-the-badge&logoColor=white)
+![FastAPI](https://img.shields.io/badge/fastapi-%23009688.svg?style=for-the-badge&logo=fastapi&logoColor=white)
+
 # CoinTrace
 
-Personal finance REST API to track your transactions, accounts, expensess, and credit installments. 
+Personal finance REST API to track your transactions, accounts, expenses, and credit installments. The focus here is to be a microservice to register simple personal finance.
 
 ## Features
 
@@ -8,7 +18,6 @@ Personal finance REST API to track your transactions, accounts, expensess, and c
 - **Bank Accounts** — manage multiple accounts (checking, savings, etc.) with an opening balance
 - **Fixed Expenses** — register recurring monthly expenses with a due day and optional linked account
 - **Credit Installments** — automatic installment breakdown from credit transactions, with optional interest rate
-- **Account Balances** — real-time balance view per account (start value + gains − expenses)
 - **Banks** — pre-seeded list of Brazilian banks
 
 ## Tech Stack
@@ -19,7 +28,6 @@ Personal finance REST API to track your transactions, accounts, expensess, and c
 - **ORM:** SQLAlchemy 2 (mapped dataclasses)
 - **Migrations:** Alembic
 - **Validation:** Pydantic v2
-- **Docs:** Swagger UI / ReDoc (auto-generated)
 - **Containers:** Docker + Docker Compose
 
 ## Getting Started
@@ -35,10 +43,19 @@ The API will be available at `http://localhost:8000`.
 
 ### Locally
 
-**Prerequisites:** Python 3.13, PostgreSQL, conda
+**Prerequisites:** Python 3.13, PostgreSQL
+
+it is recommended to create a local env
 
 ```bash
-conda activate financial-control
+python -m venv venv
+pip activate ./venv/scripts/activate
+pip install -r requirements.txt
+```
+
+with the requirements installed you will need use:
+
+```bash
 cp .env.example .env
 # edit .env with your database credentials
 alembic upgrade head
@@ -56,7 +73,9 @@ uvicorn app.main:app --reload
 | `USERNAME_API` | App database user | `user` |
 | `USERNAME_PASSWORD` | App database user password | `123` |
 | `DB_PORT` | Database port | `5432` |
-| `DEBUG` | Enable debug mode | `False` |
+| `PROD` | Disable some public info | `False` |
+| `LOCAL` | Automatically modifies the Database url to runs on localhost, if you will use in docker mantain False, otherwise set True | `False` |
+| `DEMO` | If enable it'll upload mockup data on a Demo Database and POST, PATCH, DELETE, PUT it won't work  | `False` |
 
 See [.env.example](.env.example) for a full template.
 
@@ -64,50 +83,7 @@ See [.env.example](.env.example) for a full template.
 
 After starting the server, open:
 
-- **Swagger UI:** `http://localhost:8000/api/v1/docs`
-- **ReDoc:** `http://localhost:8000/api/v1/redoc`
-
-## Endpoints
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/v1/transactions` | List transactions |
-| `POST` | `/api/v1/transactions` | Create a transaction |
-| `POST` | `/api/v1/transactions/upload` | Bulk import (xlsx/xls/ofx) |
-| `PATCH` | `/api/v1/transactions/{id}` | Update a transaction |
-| `DELETE` | `/api/v1/transactions/{id}` | Delete a transaction |
-| `GET` | `/api/v1/bank-accounts` | List bank accounts |
-| `POST` | `/api/v1/bank-accounts` | Create a bank account |
-| `PATCH` | `/api/v1/bank-accounts/{id}` | Update a bank account |
-| `DELETE` | `/api/v1/bank-accounts/{id}` | Delete a bank account |
-| `GET` | `/api/v1/fixed-expenses` | List fixed expenses |
-| `POST` | `/api/v1/fixed-expenses` | Create a fixed expense |
-| `PATCH` | `/api/v1/fixed-expenses/{id}` | Update a fixed expense |
-| `DELETE` | `/api/v1/fixed-expenses/{id}` | Delete a fixed expense |
-| `GET` | `/api/v1/account-balances` | View balances per account |
-| `GET` | `/api/v1/transactions/credit-installments` | View credit installment breakdown |
-| `GET` | `/api/v1/banks` | List available banks |
-| `GET` | `/health` | Health check |
-
-## Credit Transactions
-
-Credit purchases support installments and optional monthly interest. Pass a `details` object when creating a credit transaction:
-
-```json
-{
-  "type": "credit",
-  "value": -1200.00,
-  "transaction_date": "2026-05-01",
-  "description": "New laptop",
-  "details": {
-    "installments": 12,
-    "first_payment": "2026-06-10",
-    "interest": 0.0199
-  }
-}
-```
-
-The `credit_installments` view automatically calculates each installment's due date and value.
+- # in work
 
 ## Migrations
 
