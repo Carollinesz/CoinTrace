@@ -11,6 +11,7 @@ dist/
 
 # Environments
 .env
+.env.prod
 .venv
 env/
 venv/
@@ -27,9 +28,7 @@ ENV/
 .coverage
 htmlcov/
 .tox/
-
-# Alembic
-# (keep versions/ tracked, ignore caches)
+docker-compose.prod.yml
 
 # Docker build helpers
 _fix_encoding.py
