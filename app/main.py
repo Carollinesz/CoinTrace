@@ -36,7 +36,7 @@ app.add_middleware(RateLimitMiddleware, limit_per_minute=settings.RATE_LIMIT_PER
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.FRONTEND_URL,
+    allow_origin_regex=settings.frontend_url_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

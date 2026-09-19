@@ -1,3 +1,4 @@
+import re
 from typing import Annotated
 
 from pydantic import field_validator, model_validator
@@ -7,6 +8,14 @@ from sqlalchemy.engine import make_url
 
 def _with_host(raw: str, host: str) -> str:
     return make_url(raw).set(host=host).render_as_string(hide_password=False)
+
+
+_PORT_SUFFIX = re.compile(r":\d+$")
+
+
+def _origin_pattern(origin: str) -> str:
+    """Match one origin on any port: the browser always sends the port in `Origin`."""
+    return re.escape(_PORT_SUFFIX.sub("", origin.rstrip("/"))) + r"(:\d+)?"
 
 
 class Settings(BaseSettings):
@@ -40,6 +49,11 @@ class Settings(BaseSettings):
         if not isinstance(raw, str):
             return raw
         return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+    @property
+    def frontend_url_regex(self) -> str:
+        """FRONTEND_URL as a CORS regex, since CORSMiddleware compares origins byte for byte."""
+        return "|".join(_origin_pattern(origin) for origin in self.FRONTEND_URL)
 
     @model_validator(mode="after")
     def handle_database_host(self) -> "Settings":

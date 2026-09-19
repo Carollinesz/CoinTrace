@@ -81,9 +81,9 @@ See [.env.example](.env.example) for a full template.
 
 ## API Documentation
 
-After starting the server, open:
+You can check the full documentation at:
 
-- # in work
+- https://cointrace-documentation-three.vercel.app/
 
 ## Migrations
 
