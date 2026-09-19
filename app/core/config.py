@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     USERNAME_API: str
     USERNAME_PASSWORD: str
     DEBUG: bool = False
+    # Requests allowed per client IP per minute; 0 disables the limit.
+    RATE_LIMIT_PER_MINUTE: int = 100
 
 
     FRONTEND_URL: Annotated[list[str], NoDecode] = ["http://localhost:3000"]

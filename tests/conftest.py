@@ -13,6 +13,7 @@ _TEST_DB_URL = os.environ.get(
 os.environ["DATABASE_URL"] = _TEST_DB_URL
 os.environ["MIGRATION_DATABASE_URL"] = _TEST_DB_URL
 os.environ["DEMO"] = "False"  # keeps the demo dataset and the mutation block out of the tests
+os.environ["RATE_LIMIT_PER_MINUTE"] = "0"  # integration tests fire many requests from one client
 
 from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402

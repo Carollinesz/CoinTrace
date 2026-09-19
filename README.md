@@ -49,7 +49,7 @@ it is recommended to create a local env
 
 ```bash
 python -m venv venv
-pip activate ./venv/scripts/activate
+./venv/scripts/activate
 pip install -r requirements.txt
 ```
 

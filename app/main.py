@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.database import engine
+from app.core.rate_limit import RateLimitMiddleware
 
 MUTATION_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 
@@ -29,6 +30,9 @@ app = FastAPI(
     redoc_url=f"{settings.API_V1_PREFIX}/redoc" if ((settings.PROD == False)) else "",
     lifespan=handle_lifespan,
 )
+
+# Added before CORS so CORS wraps it: preflights skip the counter and 429s keep CORS headers.
+app.add_middleware(RateLimitMiddleware, limit_per_minute=settings.RATE_LIMIT_PER_MINUTE)
 
 app.add_middleware(
     CORSMiddleware,
